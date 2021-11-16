@@ -1,21 +1,20 @@
 %% Chicken Foraging Simulation
 
 %% Values 
-n = 4; % square matrix dimensions
-time = 50; % time to run for 
-food_source = 6; % number of positons of food
-chicken_health = 20; % Starting health of chicken
-chicken_positions = []; % creates an array of all visited positions
-food_gone = []; % creates array of positons where the food is all gone
-food_left = []; % creates an array of positons where the food is left
+n = 5; % square matrix dimensions
+time = 20; % time to run for 
+time_gone = 1;
+food_source = 11; % number of positons of food
+chicken_health = 30; % Starting health of chicken
 nodes_visited = []; % creates an array of nodes visited
 health = [];% creates an array of the helath of a chicken
 
 
 %% Creates food and chicken positions
-chicken_position = randi([1 n.^2],1); % picks a random inital position for the chicken
-food_position = randi(n.^2,food_source,1); % picks a random position 4 food sources
-amount_of_food = randi([50 100], food_source,1); % makes amount of food between two values
+chicken_position = randi([1 n.^2],1) % picks a random inital position for the chicken
+chicken_positions = [chicken_position]; % creates an array of all visited positions
+food_position = randi(n.^2,1 , food_source) % picks a random position 4 food sources
+amount_of_food = randi([2 3], 1, food_source) % makes amount of food between two values cant be 1 as then for 1:1 doesnt work 
 starting_food = sum(amount_of_food);
 
 %% Creates the graph
@@ -32,21 +31,21 @@ open(writerObj); % Starts the movie
 
 
 %% While loop allowing the chicken to travel and eat food 
-
-while length(chicken_positions) < time && chicken_health > 0  % While there is still time left and chicken is still in health
+while time_gone < time && chicken_health > 0  % While there is still time left and chicken is still in health
       
 
    %% Working out the nodes the chicken can travel to
-   neighbours = neighbors(G,chicken_position);
+   neighbours = neighbors(G,chicken_position)
    nodes_visited(end+1) = chicken_position;
 
    %% If loop so that the chicken doesnt return to the last visited node
-   if length(chicken_positions) >= 2 % doesnt count the first step
+   if length(chicken_positions) > 1 % doesnt count the first step
         neighbours(neighbours == chicken_positions(end-1)) = []; % gets rid of last visited node
    end
 
    %% Randomly picks a node for the chicken to go to
-    pick_neighbour=randperm(length(neighbours),1); 
+
+    pick_neighbour=randi(length(neighbours),1);
     chicken_position=neighbours(pick_neighbour);  
     
     %% Highligting nodes on the graph 
@@ -59,43 +58,47 @@ while length(chicken_positions) < time && chicken_health > 0  % While there is s
         writeVideo(writerObj, frame);
     
     %% If the chicken is at any of the food sources
-    if ~isempty(find(food_position == chicken_position, 1)) 
-                
+    if ~isempty(find(food_position == chicken_position, 1))       
          position = find(food_position == chicken_position); % Finds the amount of food at that food source
 
         %% If the chicken can graze freely until all food gone
-        if (length(chicken_positions)+ amount_of_food(position)) <= time
-            
-            for j = 1:amount_of_food(position) % the chicken stays there for the amount of food there
-                food_gone(end+1) = chicken_position;
+        if time_gone +amount_of_food(position) <= time
+ 
+            while amount_of_food(position) > 0 % the chicken stays there for the amount of food there
+                % Updating amount of food
+                amount_of_food(position) = amount_of_food(position) - 1; 
+                % Updating chicken positon
                 chicken_positions(end+1) = chicken_position;
                 % Makes a node magenta 
-                highlight(p,food_gone,'NodeColor','magenta')  
+                highlight(p,chicken_position,'NodeColor','magenta')  
                 % chicken health 
                 chicken_health = chicken_health + 3;
                 health(end+1) = chicken_health;
-                 
+                % Time passing
+                time_gone = time_gone +1; 
                 % Takes a frame
                 frame = getframe();
                 writeVideo(writerObj, frame);
             end 
 
-             % makes amount of food available at that point equal to 0.
-                amount_of_food(position) = 0;
              % Removes the food position when it is all gone
-                food_position(food_position == chicken_position) = [];
+              food_position(position) = [];
+              % Removes amount of food when its all gone 
+              amount_of_food(position) = [];
              
              
 
         %% If the chicken can graze but runs out of time   
-        else 
+        elseif (time_gone + amount_of_food(position)) > time 
             time_eating = 0; % So can calucate the amount of food left at the source
-            for j = 1:(time-length(chicken_positions))
+            for j = 1:(time-time_gone)
+                % Updating time 
+                time_gone = time_gone +1; 
                 time_eating = time_eating + 1;
-                food_left(end+1) = chicken_position;
+                % Updating chicken position
                 chicken_positions(end+1) = chicken_position;
                 % Makes a node red 
-                highlight(p,food_left,'NodeColor','red') 
+                highlight(p,chicken_position,'NodeColor','red') 
                 % chicken health 
                 chicken_health = chicken_health + 3;
                 health(end+1) = chicken_health;
@@ -104,20 +107,27 @@ while length(chicken_positions) < time && chicken_health > 0  % While there is s
                 writeVideo(writerObj, frame);
             end 
 
-            % Finds out how much food is left at the food source
-            position = find(food_position == chicken_position);
+            % Updates how much food is left at the food source
             amount_of_food(position) = amount_of_food(position) - time_eating;
-
-        end  
+ 
+        end
 
     %% If the chicken isnt at any food    
     else 
+        % Update chicken position
         chicken_positions(end+1) = chicken_position;
+        % Update health
         chicken_health = chicken_health -1;
         health(end+1) = chicken_health;
-    end
+        % Update time
+        time_gone = time_gone +1; 
+        % Takes a frame
+        frame = getframe();
+        writeVideo(writerObj, frame);
 
+    end 
 end 
+
 
 % Saves the movie.
 close(writerObj); 
