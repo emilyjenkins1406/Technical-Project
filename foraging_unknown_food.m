@@ -1,6 +1,6 @@
 %% Chicken Foraging Simulation
 
-function [chicken_health, food_eaten, number_of_nodes_visited] = forloop(n, time, food_source, starting_chicken_health, food_amount)
+function [chicken_health, food_eaten, number_of_nodes_visited,chicken_positions, percentage_eating] = foraging_unknown_food(n, time, food_source, starting_chicken_health, food_amount)
     
     %% Creates food and chicken positions
     chicken_position = randperm(n.^2,1); % picks a random inital position for the chicken
@@ -16,6 +16,8 @@ function [chicken_health, food_eaten, number_of_nodes_visited] = forloop(n, time
 
     %% Values 
     time_gone = 1; % How much time has passed
+    eating = 0;
+    not_eating = 1;
     
      %% Creates the graph
      A = delsq(numgrid('S',n+2)); % generates the grid
@@ -64,6 +66,7 @@ function [chicken_health, food_eaten, number_of_nodes_visited] = forloop(n, time
                 % Chicken Health
                 chicken_health = chicken_health + 1;
                 health(end+1) = chicken_health;
+                eating = eating + 1;
 %                 % Makes a node magenta 
 %                 highlight(p,chicken_position,'NodeColor','magenta') 
 %                 % Takes a frame
@@ -78,6 +81,7 @@ function [chicken_health, food_eaten, number_of_nodes_visited] = forloop(n, time
             % Update health
             chicken_health = chicken_health -1;
             health(end+1) = chicken_health;
+            not_eating = not_eating + 1;
             % Update time
             time_gone = time_gone +1; 
 %             % Takes a frame
@@ -91,6 +95,7 @@ function [chicken_health, food_eaten, number_of_nodes_visited] = forloop(n, time
     % Outputs
     food_eaten = starting_food - sum(amount_of_food);
     number_of_nodes_visited = length(nodes_visited);
+    percentage_eating = (eating/(eating+not_eating))*100;
     
     
 
