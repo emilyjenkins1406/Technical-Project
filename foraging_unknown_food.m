@@ -22,13 +22,6 @@ function [chicken_health, food_eaten, number_of_nodes_visited,chicken_positions,
      %% Creates the graph
      A = delsq(numgrid('S',n+2)); % generates the grid
      G = graph(A,'omitselfloops'); % creates a graph which omits self looping nodes
-%     [x,y] = meshgrid(1:n, 1:n); % to make the graph not 'fishbowl'
-%     p = plot(G, 'XData',x(:), 'YData',y(:)); % plotting the graph
-%     
-%     %% Set up the movie.
-%     writerObj = VideoWriter('chicken_video.avi'); % Name it.
-%     writerObj.FrameRate = 1; % How many frames per second.
-%     open(writerObj); % Starts the movie
     
     %% While loop allowing the chicken to travel and eat food 
     while time_gone < time && chicken_health > 1  % While there is still time left and chicken is still in health
@@ -43,14 +36,6 @@ function [chicken_health, food_eaten, number_of_nodes_visited,chicken_positions,
        if length(chicken_positions) > 1 % doesnt count the first step
             neighbours(neighbours == chicken_positions(end-1)) = []; % gets rid of last visited node
        end
-%         
-%         %% Highligting nodes on the graph 
-%         highlight(p,chicken_positions,'NodeColor','green', 'Marker', 'h', 'MarkerSize',8)  % Makes the chickens route green
-%         highlight(p,food_position,'NodeColor','yellow') % Makes a food position yellow if it doesnt have a chicken there
-        
-%         %% Takes a frame
-%         frame = getframe();
-%         writeVideo(writerObj, frame);
         
         %% If the chicken is at any of the food sources
         if ~isempty(find(food_position == chicken_position, 1))       
@@ -67,11 +52,6 @@ function [chicken_health, food_eaten, number_of_nodes_visited,chicken_positions,
                 chicken_health = chicken_health + 1;
                 health(end+1) = chicken_health;
                 eating = eating + 1;
-%                 % Makes a node magenta 
-%                 highlight(p,chicken_position,'NodeColor','magenta') 
-%                 % Takes a frame
-%                 frame = getframe();
-%                 writeVideo(writerObj, frame);
             end
         
         %% If the chicken isnt at any food    
@@ -84,18 +64,13 @@ function [chicken_health, food_eaten, number_of_nodes_visited,chicken_positions,
             not_eating = not_eating + 1;
             % Update time
             time_gone = time_gone +1; 
-%             % Takes a frame
-%             frame = getframe();
-%             writeVideo(writerObj, frame);
+
         end 
     end 
-    
-%     % Saves the movie.
-%     close(writerObj); 
-    % Outputs
-    food_eaten = starting_food - sum(amount_of_food);
-    number_of_nodes_visited = length(nodes_visited);
-    percentage_eating = (eating/(eating+not_eating))*100;
+% Outputs
+food_eaten = starting_food - sum(amount_of_food);
+number_of_nodes_visited = length(nodes_visited);
+percentage_eating = (eating/(eating+not_eating))*100;
     
     
 
