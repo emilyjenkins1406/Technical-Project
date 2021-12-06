@@ -1,76 +1,79 @@
 %% Chicken Foraging Simulation
 
-function [chicken_health, food_eaten, number_of_nodes_visited,chicken_positions, percentage_eating] = foraging_unknown_food(n, time, food_source, starting_chicken_health, food_amount)
+function [positions_chickens, percentage_eating, food_eaten] = foraging_unknown_food(chickens, n, time, food_source, starting_chicken_health, food_amount)
     
     %% Creates food and chicken positions
-    chicken_position = randperm(n.^2,1); % picks a random inital position for the chicken
-    nodes_visited = [chicken_position]; % creates an array of nodes visited
-    chicken_positions = [chicken_position]; % creates an array of all visited positions
-    food_position = randperm(n.^2,food_source); % picks a random position 4 food sources
+    positions = randperm(n.^2,(chickens+food_source)); % determines the positons of chickens and food 
+    positions_chickens = []; % Creates a matrix for the positions of the chickens
+    positions_chickens(:, 1) = positions(1:chickens); % adds first position of the chicken to the matrix 
+    food_position = positions(chickens + 1:end); % picks a random position 4 food sources
     amount_of_food = randi(food_amount, 1, food_source); % makes amount of food between two values cant be 1 as then for 1:1 doesnt work 
     starting_food = sum(amount_of_food); % In order to work out how much food has been eaten all together
     
     %% Creates a 'health' of a chicken 
-    chicken_health = starting_chicken_health; % Starting health of chicken
-    health = [chicken_health]; % creates an array of the health of a chicken
-
-    %% Values 
-    time_gone = 1; % How much time has passed
-    eating = 0;
-    not_eating = 1;
+    health = zeros(chickens,1);
+    health(:, 2) = starting_chicken_health; % adds first position of the chicken to the matrix 
+    health(:,1) = []; % removes the first column 
     
-     %% Creates the graph
+    %% Values 
+    time_gone = 0; % How much time has passed
+    eating = zeros(chickens,1);
+    not_eating = ones(chickens,1); % adding one for the first timestep
+    
+    %% Creates the graph
      A = delsq(numgrid('S',n+2)); % generates the grid
      G = graph(A,'omitselfloops'); % creates a graph which omits self looping nodes
-    
-    %% While loop allowing the chicken to travel and eat food 
-    while time_gone < time && chicken_health > 1  % While there is still time left and chicken is still in health
-          
-       %% Working out the nodes the chicken can travel to
-       nodes_visited(end+1) = chicken_position;
-       neighbours = neighbors(G,chicken_position);
-       pick_neighbour = randi(length(neighbours),1); % Randomly picks a node for the chicken to go to
-       chicken_position = neighbours(pick_neighbour);  
-    
-       %% If loop so that the chicken doesnt return to the last visited node
-       if length(chicken_positions) > 1 % doesnt count the first step
-            neighbours(neighbours == chicken_positions(end-1)) = []; % gets rid of last visited node
-       end
-        
-        %% If the chicken is at any of the food sources
-        if ~isempty(find(food_position == chicken_position, 1))       
 
-            position = find(food_position == chicken_position); % Finds the amount of food at that food source        
-            while amount_of_food(position) > 0 && chicken_health <= starting_chicken_health -1 && time_gone < time 
+    %% Finds the current health of all chickens
+     current_health = health(:, (time_gone+1));
+     all_current_health = find(current_health < 2);
+ 
+    %% While loop allowing the chicken to travel and eat food 
+    while time_gone < (time - 1) && length(all_current_health) < 1  % While there is still time left and all chickens are still in health
+      
+        time_gone = time_gone +1;  % Time passing
+
+     %% All chickens taking a singular step
+     for i = 1:chickens
+
+        position = find(food_position == positions_chickens(i,time_gone)); % Finds the amount of food at a food source     
+
+        %% If a healthy chicken is at any of the food sources where there is food and still time left
+        if ~isempty(position)  && amount_of_food(position) > 0 && health(i,(time_gone)) <= starting_chicken_health -1 && time_gone < time    
+
                 % Updating amount of food
-                amount_of_food(position) = amount_of_food(position) - 1;
-                % Updating chicken positon
-                chicken_positions(end+1) = chicken_position;                
-                % Time passing
-                time_gone = time_gone +1; 
+                amount_of_food(position) = amount_of_food(position) - 1;           
+                % Updating positions 
+                positions_chickens(i,(time_gone+1)) = positions_chickens(i,time_gone);
                 % Chicken Health
-                chicken_health = chicken_health + 1;
-                health(end+1) = chicken_health;
-                eating = eating + 1;
-            end
+                health(i,(time_gone+1)) = health(i,(time_gone)) + 1;
+                % Amount of time eating
+                eating(i,1) = eating(i,1) +1;
+           
         
         %% If the chicken isnt at any food    
         else 
-            % Update chicken position
-            chicken_positions(end+1) = chicken_position;
-            % Update health
-            chicken_health = chicken_health -1;
-            health(end+1) = chicken_health;
-            not_eating = not_eating + 1;
-            % Update time
-            time_gone = time_gone +1; 
+
+            neighbours = neighbors(G,positions_chickens(i,1)); % Working out the nodes the chicken can travel to
+
+           %% If loop so that the chicken doesnt return to the last visited node
+           if time_gone > 1 % doesnt count the first step
+                neighbours(neighbours == positions_chickens(i,time_gone -1 )) = []; % gets rid of last visited node
+           end
+
+           pick_neighbour = randi(length(neighbours),1); % Randomly picks a node for the chicken to go to
+           positions_chickens(i,(time_gone+1)) = neighbours(pick_neighbour);
+           not_eating(i,1) = not_eating(i,1) +1;   % Not eating
+           health(i,(time_gone+1)) = health(i,(time_gone)) - 1; % Update health
 
         end 
+      
+     end 
     end 
-% Outputs
+     
+ % Outputs
 food_eaten = starting_food - sum(amount_of_food);
-number_of_nodes_visited = length(nodes_visited);
-percentage_eating = (eating/(eating+not_eating))*100;
+percentage_eating = (mean(eating)/(mean(eating)+mean(not_eating)))*100;
     
     
 
