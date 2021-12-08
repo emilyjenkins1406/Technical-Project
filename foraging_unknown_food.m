@@ -1,6 +1,6 @@
 %% Chicken Foraging Simulation
 
-function [positions_chickens, percentage_eating, food_eaten] = foraging_unknown_food(chickens, n, time, food_source, starting_chicken_health, food_amount)
+function [positions_chickens, percentage_eating, dead, min_health] = foraging_unknown_food(chickens, n, time, food_source, starting_chicken_health, food_amount)
     
     %% Creates food and chicken positions
     positions = randperm(n.^2,(chickens+food_source)); % determines the positons of chickens and food 
@@ -8,7 +8,7 @@ function [positions_chickens, percentage_eating, food_eaten] = foraging_unknown_
     positions_chickens(:, 1) = positions(1:chickens); % adds first position of the chicken to the matrix 
     food_position = positions(chickens + 1:end); % picks a random position 4 food sources
     amount_of_food = randi(food_amount, 1, food_source); % makes amount of food between two values cant be 1 as then for 1:1 doesnt work 
-    starting_food = sum(amount_of_food); % In order to work out how much food has been eaten all together
+    healths = [];
     
     %% Creates a 'health' of a chicken 
     health = zeros(chickens,1);
@@ -69,11 +69,26 @@ function [positions_chickens, percentage_eating, food_eaten] = foraging_unknown_
         end 
       
      end 
+     %% Finds the current health of all chickens
+     current_health = health(:, (time_gone+1));
+     all_current_health = find(current_health < 2);
     end 
      
- % Outputs
-food_eaten = starting_food - sum(amount_of_food);
+%% Outputs
 percentage_eating = (mean(eating)/(mean(eating)+mean(not_eating)))*100;
-    
+dead = sum(current_health(:) == 1);
+a = 0;
+
+%% Finding the min health of all the chickens ( minus the dead ones)
+for i = 1:chickens % collects the helath for chickens that survived
+
+    if current_health(i) > 1
+        a = a +1;
+        healths(a, :) = health(i, :);
+    end 
+end 
+
+min_health = min(healths, [], 'all'); % The min health of all chickens
+
     
 

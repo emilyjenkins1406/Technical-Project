@@ -1,8 +1,6 @@
 %% Chicken Foraging Simulation
 
-function [positions_chickens, percentage_eating, food_eaten] = foraging_known_food(chickens, n, time, food_source, starting_chicken_health, food_amount);
-
-
+function [positions_chickens, percentage_eating, dead, min_health] = foraging_known_food(chickens, n, time, food_source, starting_chicken_health, food_amount);
 
     %% Creates the graph
     A = delsq(numgrid('S',n+2)); % generates the grid
@@ -14,13 +12,13 @@ function [positions_chickens, percentage_eating, food_eaten] = foraging_known_fo
     positions_chickens(:, 1) = positions(1:chickens); % adds first position of the chicken to the matrix 
     food_position = positions(chickens + 1:end); % picks a random position 4 food sources
     amount_of_food = randi(food_amount, 1, food_source); % makes amount of food between two values cant be 1 as then for 1:1 doesnt work 
-    starting_food = sum(amount_of_food); % In order to work out how much food has been eaten all together
+    healths = [];
+   
     
     %% Creates a 'health' of a chicken 
     health = zeros(chickens,1);
     health(:, 2) = starting_chicken_health; % adds first position of the chicken to the matrix 
     health(:,1) = []; % removes the first column 
-
 
     %% Values 
     time_gone = 0; % How much time has passed
@@ -28,7 +26,6 @@ function [positions_chickens, percentage_eating, food_eaten] = foraging_known_fo
     not_eating = ones(chickens,1); % adding one for the first timestep
     low_health = 40; % settingthe lwoer limit after when it is passed the chciken starts looking for food again.
     a = 0;
-
     
     %% Finds the current health of all chickens
      current_health = health(:, (time_gone+1));
@@ -42,7 +39,6 @@ function [positions_chickens, percentage_eating, food_eaten] = foraging_known_fo
         for i = 1: chickens
 
            %% When the chicken is at full health so waits ten timesteps just randomly walking
-           
            if time_gone > 2 && health(i,(time_gone)) > 49 || a > 0
            
                a = 10;         
@@ -62,7 +58,6 @@ function [positions_chickens, percentage_eating, food_eaten] = foraging_known_fo
               
     
             %% When the chicken is at a food source
-           
            elseif ~isempty(find(food_position == positions_chickens(i,time_gone), 1))
                     position = find(food_position == positions_chickens(i,time_gone));
                    % Amount of time eating
@@ -95,7 +90,6 @@ function [positions_chickens, percentage_eating, food_eaten] = foraging_known_fo
                health(i,(time_gone+1)) = health(i,(time_gone)) - 1; % Update health
               
 
-
            %% If the chicken wants to find some food
            else 
                % Finding the distance from the current position to food sources
@@ -107,15 +101,27 @@ function [positions_chickens, percentage_eating, food_eaten] = foraging_known_fo
                not_eating(i,1) = not_eating(i,1) +1;   % Not eating
            end 
         end 
-             
+
+         %% Finds the current health of all chickens
+        current_health = health(:, (time_gone+1));
+        all_current_health = find(current_health < 2);    
     end 
 
-    % Outputs
-food_eaten = starting_food - sum(amount_of_food);
+%% Outputs
 percentage_eating = (mean(eating)/(mean(eating)+mean(not_eating)))*100;
-  
+dead = sum(current_health(:) == 1);
 
+%% Finding the min health of all the chickens ( minus the dead ones)
+for i = 1:chickens % collects the helath for chickens that survived
 
+    if current_health(i) > 1
+        a = a +1;
+        healths(a, :) = health(i, :);
+    end 
+end 
+
+min_health = min(healths, [], 'all'); % The min health of all chickens
+health
  
     
     
