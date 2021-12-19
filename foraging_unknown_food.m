@@ -1,14 +1,21 @@
 %% Chicken Foraging Simulation
 
-function [positions_chickens, percentage_eating, dead, min_health, variance] = foraging_unknown_food(chickens, n, time, food_source, starting_chicken_health, food_amount)
-    
+
+function [positions_chickens, percentage_eating, dead, min_health, variance, moving_on] = foraging_unknown_food(chickens, n, time, food_source, starting_chicken_health, food_amount)
+
+
     %% Creates food and chicken positions
     positions = randperm(n.^2,(chickens+food_source)); % determines the positons of chickens and food 
     positions_chickens = []; % Creates a matrix for the positions of the chickens
     positions_chickens(:, 1) = positions(1:chickens); % adds first position of the chicken to the matrix 
     food_position = positions(chickens + 1:end); % picks a random position 4 food sources
+    all_food_positions = kron(food_position,ones(chickens,1));
     amount_of_food = randi(food_amount, 1, food_source); % makes amount of food between two values cant be 1 as then for 1:1 doesnt work 
     healths = [];
+
+    %% Dominance Hierachy  % lowest number = highest ranking
+    ranking = 1 : chickens; % where the highest ranking chicken is the first row of health and positions and so on
+    moving_on = 0;
     
     %% Creates a 'health' of a chicken 
     health = zeros(chickens,1);
@@ -34,21 +41,49 @@ function [positions_chickens, percentage_eating, dead, min_health, variance] = f
         time_gone = time_gone +1;  % Time passing
 
      %% All chickens taking a singular step
-     for i = 1:chickens
-
+     for i = 1:chickens % making the higher ranking chicken move first
+        
+        food = all_food_positions(i, :);
+        food(isnan(food)) = [];
         position = find(food_position == positions_chickens(i,time_gone)); % Finds the amount of food at a food source     
 
         %% If a healthy chicken is at any of the food sources where there is food and still time left
+  
         if ~isempty(position)  && amount_of_food(position) > 0 && time_gone < time    
 
-                % Updating amount of food
-                amount_of_food(position) = amount_of_food(position) - 1;           
-                % Updating positions 
-                positions_chickens(i,(time_gone+1)) = positions_chickens(i,time_gone);
-                % Chicken Health
-                health(i,(time_gone+1)) = health(i,(time_gone)) + 1;
-                % Amount of time eating
-                eating(i,1) = eating(i,1) +1;
+                if ~isempty(find(positions_chickens(i,time_gone) == positions_chickens(1:(i-1),time_gone), 1))  && i > 1  % another chciken there
+                    % Amount of time eating
+                   eating(i,1) = eating(i,1) +1;
+                    % spends one timestep there realsies there is a higher ranking chicken so moves on
+                    moving_on = moving_on + 1;
+                    % removes the food positon as a possibilty 
+                    [row, col] = find(all_food_positions(i) == positions_chickens(:,time_gone));
+                    all_food_positions(i, col) = NaN; 
+                    neighbours = neighbors(G,positions_chickens(i,1)); % Working out the nodes the chicken can travel to
+                   pick_neighbour = randi(length(neighbours),1); % Randomly picks a node for the chicken to go to
+                   positions_chickens(i,(time_gone+1)) = neighbours(pick_neighbour);
+                   not_eating(i,1) = not_eating(i,1) +1;   % Not eating
+                   health(i,(time_gone+1)) = health(i,(time_gone)) - 1; % Update health
+                   
+               else
+                    position = find(all_food_positions(i)== positions_chickens(i,time_gone));
+                    
+                   % Amount of time eating
+                   eating(i,1) = eating(i,1) +1;
+                   % Updating positions 
+                    positions_chickens(i,(time_gone+1)) = positions_chickens(i,time_gone);
+                   % Amount of food
+                   amount_of_food(position) = amount_of_food(position) - 1; 
+                   % Chicken Health
+                    health(i,(time_gone+1)) = health(i,(time_gone)) + 1;
+                   % When the food runs out at the source remove position
+                   if amount_of_food(position) == 0
+                       [row, col] = find(all_food_positions(i) == positions_chickens(i,time_gone));
+                       all_food_positions(:, col) = [];
+                       amount_of_food(position) = [];
+                       food_position(position)= [];
+                    end 
+               end 
            
         
         %% If the chicken isnt at any food    
@@ -56,10 +91,20 @@ function [positions_chickens, percentage_eating, dead, min_health, variance] = f
 
             neighbours = neighbors(G,positions_chickens(i,1)); % Working out the nodes the chicken can travel to
 
-           %% If loop so that the chicken doesnt return to the last visited node
-           if time_gone > 1 % doesnt count the first step
+           %% Gets rid of nodes where higher ranking chickens are currently at
+               if i > 1
+                    for p = 1 : (i - 1)
+                        neighbours(neighbours == positions_chickens(1:(i-1),time_gone)) = [];
+                        [row, col] = find(all_food_positions(i) == positions_chickens(:,time_gone));
+                        all_food_positions(i, col) = NaN;
+                    end
+               end
+           
+               %% If loop so that the chicken doesnt return to the last visited node only if there are other options - would rather it repeat than go to the other chciken
+           if time_gone > 1 && length(neighbours) > 1% doesnt count the first step
                 neighbours(neighbours == positions_chickens(i,time_gone -1 )) = []; % gets rid of last visited node
            end
+
 
            pick_neighbour = randi(length(neighbours),1); % Randomly picks a node for the chicken to go to
            positions_chickens(i,(time_gone+1)) = neighbours(pick_neighbour);
@@ -92,4 +137,5 @@ min_health = min(healths, [], 'all'); % The min health of all chickens
 mean_health = mean(healths,2); % mean health for all alive chikens 
 variance = var(mean_health);
 
+positions_chickens
 

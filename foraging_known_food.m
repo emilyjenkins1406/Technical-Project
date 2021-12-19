@@ -2,7 +2,6 @@
 
 function [positions_chickens, percentage_eating, dead, min_health, variance, moving_on] = foraging_known_food(chickens, n, time, food_source, starting_chicken_health, food_amount);
 
-
     %% Creates the graph
     A = delsq(numgrid('S',n+2)); % generates the grid
     G = graph(A,'omitselfloops'); % creates a graph which omits self looping nodes
@@ -13,6 +12,7 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
     positions_chickens(:, 1) = positions(1:chickens); % adds first position of the chicken to the matrix 
     food_position = positions(chickens + 1:end); % picks a random position 4 food sources
     all_food_positions = kron(food_position,ones(chickens,1));
+
     amount_of_food = randi(food_amount, 1, food_source); % makes amount of food between two values cant be 1 as then for 1:1 doesnt work 
     healths = [];
     
@@ -39,8 +39,9 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
     %% While there is still time left and chicken is still in health
     while time_gone < (time -1) && length(all_current_health) < 1
 
+
+
         time_gone = time_gone +1;  % Time passing
-             
         for i = 1: chickens % making the higher ranking chicken move first
 
             food = all_food_positions(i, :);
@@ -73,15 +74,17 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
   
     
            %% When the chicken is at a food source
-           elseif ~isempty(find(all_food_positions(i) == positions_chickens(i,time_gone), 1))
-
+           elseif ~isempty(find(all_food_positions(i,:) == positions_chickens(i,time_gone), 1))
 
                if ~isempty(find(positions_chickens(i,time_gone) == positions_chickens(1:(i-1),time_gone), 1))  && i > 1  % another chciken there
+                   % Amount of time eating
+                   eating(i,1) = eating(i,1) + 1;
                     % spends one timestep there realsies there is a higher ranking chicken so moves on
                     moving_on = moving_on + 1;
                     % removes the food positon as a possibilty 
                     [row, col] = find(all_food_positions(i) == positions_chickens(:,time_gone));
                     all_food_positions(i, col) = NaN; 
+
                     neighbours = neighbors(G,positions_chickens(i,1)); % Working out the nodes the chicken can travel to
                    pick_neighbour = randi(length(neighbours),1); % Randomly picks a node for the chicken to go to
                    positions_chickens(i,(time_gone+1)) = neighbours(pick_neighbour);
@@ -90,7 +93,7 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
                    
                else
                     position = find(all_food_positions(i)== positions_chickens(i,time_gone));
-                    
+                   
                    % Amount of time eating
                    eating(i,1) = eating(i,1) +1;
                    % Updating positions 
@@ -101,7 +104,8 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
                     health(i,(time_gone+1)) = health(i,(time_gone)) + 1;
                    % When the food runs out at the source remove position
                    if amount_of_food(position) == 0
-                       all_food_positions(all_food_positions == positions_chickens(i,time_gone)) = [];
+                        [row, col] = find(all_food_positions(i) == positions_chickens(i,time_gone));
+                       all_food_positions(:, col) = [];
                        amount_of_food(position) = [];
                     end 
                end 
@@ -123,6 +127,7 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
                         neighbours(neighbours == positions_chickens(1:(i-1),time_gone)) = [];
                         [row, col] = find(all_food_positions(i) == positions_chickens(:,time_gone));
                         all_food_positions(i, col) = NaN;
+
                     end
                end
 
@@ -136,11 +141,16 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
            %% If the chicken wants to find some food
            else 
                % Finding the distance from the current position to food sources
-       
+    
                d = distances(G, positions_chickens(i,(time_gone)), food, 'Method','unweighted'); % unweighted graph
                [value, index] = min(d);
                path = shortestpath(G,positions_chickens(i,(time_gone)),food(index), 'Method','unweighted');
-               positions_chickens(i,(time_gone+1)) = path(2);
+               if length(path) == 1
+                   value = 1;
+               else 
+                   value = 2; 
+               end 
+               positions_chickens(i,(time_gone+1)) = path(value);
                health(i,(time_gone+1)) = health(i,(time_gone)) - 1; % Update health
                not_eating(i,1) = not_eating(i,1) +1;   % Not eating
                
