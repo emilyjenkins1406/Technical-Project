@@ -1,6 +1,6 @@
  %% Chicken Foraging Simulation
 
-function [positions_chickens, percentage_eating, dead, min_health, variance, moving_on] = foraging_known_food(chickens, n, time, food_source, starting_chicken_health, food_amount);
+function [positions_chickens, percentage_eating, dead, min_health, variance, moving_on] = foraging_known_food(chickens, n, time, food_source, starting_chicken_health, food_amount)
 
     %% Creates the graph
     A = delsq(numgrid('S',n+2)); % generates the grid
@@ -12,13 +12,13 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
     positions_chickens(:, 1) = positions(1:chickens); % adds first position of the chicken to the matrix 
     food_position = positions(chickens + 1:end); % picks a random position 4 food sources
     all_food_positions = kron(food_position,ones(chickens,1));
-
     amount_of_food = randi(food_amount, 1, food_source); % makes amount of food between two values cant be 1 as then for 1:1 doesnt work 
     healths = [];
     
-    %% Dominance Hierachy  % lowest number = highest ranking
+    %% Dominance Hierachy where the lowest number = highest ranking
     ranking = 1 : chickens; % where the highest ranking chicken is the first row of health and positions and so on
     moving_on = 0;
+    dead = 0;
     
     %% Creates a 'health' of a chicken 
     health = zeros(chickens,1);
@@ -37,18 +37,21 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
      all_current_health = find(current_health < 2);
 
     %% While there is still time left and chicken is still in health
-    while time_gone < (time -1) && length(all_current_health) < 1
-
-
+    while time_gone < (time -1) && dead < chickens
 
         time_gone = time_gone +1;  % Time passing
+
         for i = 1: chickens % making the higher ranking chicken move first
 
             food = all_food_positions(i, :);
             food(isnan(food)) = [];
+            %% If a healthy chicken is at any of the food sources where there is food and still time left
+           if  health(i, (time_gone)) == 1 || health(i, (time_gone)) == 0 
 
+              health(i,(time_gone+1)) = 0; % Update health
+             positions_chickens(i,(time_gone+1)) = NaN;
            %% When the chicken is at full health so waits ten timesteps just randomly walking
-           if time_gone > 2 && health(i,(time_gone)) > 49 || a > 0
+           elseif time_gone > 2 && health(i,(time_gone)) > 49 || a > 0
            
                a = 10;         
                % Working out the nodes the chicken can travel to                
@@ -125,7 +128,7 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
                if i > 1
                     for p = 1 : (i - 1)
                         neighbours(neighbours == positions_chickens(1:(i-1),time_gone)) = [];
-                        [row, col] = find(all_food_positions(i) == positions_chickens(:,time_gone));
+                        [~, col] = find(all_food_positions(i) == positions_chickens(:,time_gone));
                         all_food_positions(i, col) = NaN;
 
                     end
@@ -160,11 +163,12 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
          %% Finds the current health of all chickens
         current_health = health(:, (time_gone+1));
         all_current_health = find(current_health < 2);    
+        dead = sum(current_health(:)==0);
     end 
 
 %% Outputs
 percentage_eating = (mean(eating)/(mean(eating)+mean(not_eating)))*100;
-dead = sum(current_health(:) == 1);
+
 
 %% Finding the min health of all the chickens ( minus the dead ones)
 for i = 1:chickens % collects the helath for chickens that survived
@@ -178,7 +182,8 @@ end
 min_health = min(healths, [], 'all'); % The min health of all chickens
 mean_health = mean(healths,2); % mean health for all alive chikens 
 variance = var(mean_health);
-
+positions_chickens
+health
     
     
 
