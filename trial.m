@@ -11,17 +11,18 @@ movings_on = [];
 % Values
 dead = 0;
 % Inputs
-n = 3; % square matrix dimensions
-time = 12; % time to run for 
-food_source = 1; % number of positons of food
+n = 10; % square matrix dimensions
+time = 100; % time to run for 
+food_source = 5; % number of positons of food
 starting_chicken_health = 10; % How long the chciken will live for
 food_amount = [10, 20]; % amount of food generated 
 chickens = 5;
+dominance_hierachy = 1; % 1 = present 
 
 
-for i = 1
+for i = 1:10
 
-    [positions_chickens, percentage_eating, dead, min_health, variance, moving_on] = foraging_unknown_food(chickens, n, time, food_source, starting_chicken_health, food_amount);
+    [positions_chickens, percentage_eating, dead, min_health, variance, moving_on] = foraging_unknown_food(dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount);
     eating(end+1) = percentage_eating;
     variances(end+1)= variance;
     movings_on(end+1)= moving_on;

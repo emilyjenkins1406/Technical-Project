@@ -1,6 +1,6 @@
 %% Chicken Foraging Simulation
 
-function [positions_chickens, percentage_eating, dead, min_health, variance, moving_on] = foraging_unknown_food(chickens, n, time, food_source, starting_chicken_health, food_amount)
+function [positions_chickens, percentage_eating, dead, min_health, variance, moving_on] = foraging_unknown_food(dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount)
 
     %% Creates food and chicken positions
     positions = randperm(n.^2,(chickens+food_source)); % determines the positons of chickens and food 
@@ -53,8 +53,9 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
             positions_chickens(i,(time_gone+1)) = NaN;
       
         elseif ~isempty(position)  && amount_of_food(position) > 0 && time_gone < time    
-
-                if ~isempty(find(positions_chickens(i,time_gone) == positions_chickens(1:(i-1),time_gone), 1))  && i > 1  % another chciken there
+                
+            %% if another chicken and dom hierachy present 
+                if ~isempty(find(positions_chickens(i,time_gone) == positions_chickens(1:(i-1),time_gone), 1))  && i > 1 && dominance_hierachy == 1  % another chciken there
                    % Amount of time eating
                    eating(i,1) = eating(i,1) +1;
                    % spends one timestep there realsies there is a higher ranking chicken so moves on
@@ -93,16 +94,14 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
 
            neighbours = neighbors(G,positions_chickens(i,1)); % Working out the nodes the chicken can travel to
            all_neighbours = neighbours; 
-           %% Gets rid of nodes where higher ranking chickens are currently at
-               if i > 1
+           %% Gets rid of nodes where higher ranking chickens are currently at if dom hierachy present 
+               if i > 1 && dominance_hierachy == 1
                     for p = 1 : (i - 1)
                         A = positions_chickens(1:(i-1),time_gone);
                         for ii = 1:length(A)       
                             neighbours(find(neighbours == A(ii), 1,'first')) = [];
                         end
-                      
-                        [~, col] = find(all_food_positions(i) == positions_chickens(:,time_gone));
-                        all_food_positions(i, col) = NaN;
+                        
                     end
                end
            
@@ -142,7 +141,6 @@ end
 
 %% Outputs
 percentage_eating = (mean(eating)/(mean(eating)+mean(not_eating)))*100;
-
 min_health = min(healths, [], 'all'); % The min health of all chickens
 mean_health = mean(healths,2); % mean health for all alive chikens 
 variance = var(mean_health);
