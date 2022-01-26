@@ -73,6 +73,7 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
 
                %% Working out the nodes the chicken can travel to                
                neighbours = neighbors(G,positions_chickens(i,1)); 
+               all_neighbours = neighbours;
 
                %% If loop so that the chicken doesnt return to the last visited node
                if time_gone > 1 % doesnt count the first step
@@ -86,7 +87,11 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
                         neighbours(neighbours == positions_chickens(y,time_gone)) = [];
                     end
                end
-
+               
+               %% But if this means there are no possible points to visit inculde all (make this to choose least higher chicken soon)
+               if length(neighbours) < 1 
+                   neighbours = all_neighbours;
+               end 
                positions_chickens(i,(time_gone+1)) = neighbours(randi(length(neighbours),1)); % Randomly picks a node for the chicken to go to
                not_eating(i,1) = not_eating(i,1) +1;  % Not eating
                health(i,(time_gone+1)) = health(i,(time_gone)) - 1; % Update health
@@ -127,7 +132,7 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
            
            %% When there is no food left so it just randomly walks   
            elseif isempty(food)  
-                positions_chickens(i,time_gone)
+               
                 neighbours = neighbors(G,positions_chickens(i,time_gone)); % Working out the nodes the chicken can travel to
                 all_neighbours = neighbours;
                %% Still doesnt meet with higher ranking chickens 
@@ -146,7 +151,7 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
                if length(neighbours) < 1 
                    neighbours = all_neighbours;
                end 
-                neighbours
+            
                positions_chickens(i,(time_gone+1)) = neighbours(randi(length(neighbours),1));
                not_eating(i,1) = not_eating(i,1) +1;   % Not eating
                health(i,(time_gone+1)) = health(i,(time_gone)) - 1; % Update health
@@ -155,7 +160,7 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
            else 
                % Finding the distance from the current position to all food sources
                d = distances(G, positions_chickens(i,(time_gone)), food, 'Method','unweighted'); % unweighted graph
-               [value, index] = min(d);
+               [~, index] = min(d);
                path = shortestpath(G,positions_chickens(i,(time_gone)),food(index), 'Method','unweighted');
 
                % checks how far away the position is
@@ -183,10 +188,8 @@ if graphing == 1
                plotting = positions_chickens(i,:);
                plotting(isnan(plotting)) = [];
                highlight(p, plotting(end),'NodeColor','black', 'Marker', 'h', 'MarkerSize',8)  % Makes the chickens route green
-            
           
-           else
-              
+           else              
                highlight(p, positions_chickens(i,:),'NodeColor','green', 'Marker', 'h', 'MarkerSize',8)  % Makes the chickens route green
            end 
 
@@ -196,21 +199,18 @@ if graphing == 1
                  highlight(p,eating_here,'NodeColor','magenta','Marker', 'h', 'MarkerSize',8) % Makes a food position yellow if it doesnt have a chicken there
            end 
         end 
-
-end 
- %% Takes a frame
+%% Takes a frame
             frame = getframe();
             writeVideo(writerObj, frame);
+end 
+ 
     end 
 
         %% Finds the current health of all chickens
         current_health = health(:, (time_gone+1));
         all_current_health = find(current_health < 2);    
         dead = sum(current_health(:)==0);
- if graphing == 1
-        
- end 
-     
+
 
 %% Finding the min health of all the chickens ( minus the dead ones)
 for i = 1:chickens % collects the health for chickens that survived

@@ -1,8 +1,8 @@
 %% Chicken Foraging Simulation
 
-function [positions_chickens, percentage_eating, dead, min_health, variance, moving_on] = foraging_unknown_food(dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount)
+function [positions_chickens, percentage_eating, dead, min_health, variance, moving_on] = foraging_unknown_food(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount)
 
-    %% Creates food and chicken positions
+    %% Creates food and chicken positionsz
     positions = randperm(n.^2,(chickens+food_source)); % determines the positons of chickens and food 
     positions_chickens = []; % Creates a matrix for the positions of the chickens
     positions_chickens(:, 1) = positions(1:chickens); % adds first position of the chicken to the matrix 
