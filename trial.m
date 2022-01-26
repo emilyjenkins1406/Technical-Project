@@ -1,4 +1,4 @@
-
+%% Makes tables
 % Arrays
 all_food_eaten = [];
 number = [];

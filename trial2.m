@@ -1,3 +1,4 @@
+%% Makes graphs 
 
 % Arrays
 all_food_eaten = [];
@@ -63,7 +64,7 @@ end
 
 
 %% DOM
-dominance_hierachy = 1; % 1 = present
+dominance_hierachy = 0; % 1 = present
 % Arrays
 all_food_eaten = [];
 number = [];
@@ -83,7 +84,7 @@ for food_source = 1:50
 
     for i = 1:50
     
-        [positions_chickens, percentage_eating, dead, min_health, variance, moving_on] = foraging_known_food(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount);
+        [positions_chickens, percentage_eating, dead, min_health, variance, moving_on] = foraging_unknown_food(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount);
         eating(end+1) = percentage_eating;
         variances(end+1)= variance;
         movings_on(end+1)= moving_on;
@@ -131,8 +132,8 @@ percentage_of_deaths = transpose(percentage_of_deaths);
 plot(dimensions,percentage_of_deaths,'-*', 'LineWidth',3)
 hold on 
 plot(dimensions, percentage_of_deaths_dom, '-*', 'LineWidth',3) % Plot training data.
-legend('Known No Dom', 'Known Dom', 'Location','best') 
-xlabel('Grid Dimensions') % x-axis label
+legend('Known', 'Unknown', 'Location','best') 
+xlabel('Number of Food Sources') % x-axis label
 ylabel('Percentage of Deaths [\%]') % y-axis label
 savepdf()
 
