@@ -23,7 +23,7 @@ time = 100; % time to run for
 food_source = 5; % number of positons of food
 starting_chicken_health = 10; % How long the chciken will live for
 food_amount = [10, 20]; % amount of food generated 
-chickens = 5;
+chickens = 10;
 graphing = 0; % 1 = present 
 
 
