@@ -19,12 +19,13 @@ dead = 0;
 dominance_hierachy = 1;
 % Inputs
 n = 10; % square matrix dimensions
-time = 5; % time to run for 
+time = 10; % time to run for 
 food_source = 3; % number of positons of food
 starting_chicken_health = 10; % How long the chciken will live for
 food_amount = [10, 20]; % amount of food generated 
 chickens = 1;
-graphing = 0; % 1 = present 
+graphing = 1; % 1 = present
+path = 0; % chicken doesnt havea path set
 
 
 % Values
@@ -128,6 +129,8 @@ dead = 0;
     
            %% When the chicken is at a food source
            elseif ~isempty(find(all_food_positions(i,:) == positions_chickens(i,time_gone), 1))
+
+               path = 0; % as the chicken is now at the end of its route
                
                %% If there is another chicken and the hierachy is present 
                if ~isempty(find(positions_chickens(i,time_gone) == positions_chickens(1:(i-1),time_gone), 1))  && i > 1 && dominance_hierachy == 1 
@@ -185,33 +188,50 @@ dead = 0;
                not_eating(i,1) = not_eating(i,1) +1;   % Not eating
                health(i,(time_gone+1)) = health(i,(time_gone)) - 1; % Update health
               
-           %% If the chicken wants to find some food
+           %% If the chicken is on its way to food 
+           elseif path == 1
+                           % checks how far away the position is
+                   if length(set_path) == 1
+                       value = 1;
+                   else 
+                       value = 2; 
+                   end 
+                   positions_chickens(i,(time_gone+1)) = set_path(value);
+                   health(i,(time_gone+1)) = health(i,(time_gone)) - 1; % Update health
+                   not_eating(i,1) = not_eating(i,1) +1;   % Not eating   
+               
+           %% if needs to find a source to go to 
            else 
+                
                % Finding the distance from the current position to all food sources
                d = distances(G, positions_chickens(i,(time_gone)), food, 'Method','unweighted'); % unweighted graph
-               [~, idx] = find(d > -Inf, food_source, 'first');
                % Makes sure that the distances are in order with their
                % correpsonding amount of food at each food source
-               [B, I] = sort(move_to(1, :));
-               move_to(1, :) = B;
-               move_to(2, :) = move_to(2, I); % "shuffle" the second row to match the sorting order
-               steps_per_food = bsxfun(@rdivide,move_to(2,:),move_to(1,:)); % divides the second row by the first 
+               move_to = [food_position; d; amount_of_food];
+               [B, I] = sort(move_to(2, :));
+               move_to(2, :) = B;
+               move_to(3, :) = move_to(3, I); % "shuffle" the third row to match the sorting order
+               move_to(1, :) = move_to(1, I); % "shuffle" the third row to match the sorting order
+               steps_per_food = bsxfun(@rdivide,move_to(3,:),move_to(2,:)); % divides the amount of food by the number of steps to each food source
                [~, index] = max(steps_per_food); % picks the max steps per 'food'
-               path = shortestpath(G,positions_chickens(i,(time_gone)),d(index), 'Method','unweighted'); % finds shortest path to selcted food position
-
+               set_path = shortestpath(G,positions_chickens(i,(time_gone)),(move_to(1, index)), 'Method','unweighted'); % finds shortest path to selcted food position
                % checks how far away the position is
-               if length(path) == 1
+               if length(set_path) == 1
                    value = 1;
                else 
                    value = 2; 
                end 
-               positions_chickens(i,(time_gone+1)) = path(value);
+               positions_chickens(i,(time_gone+1)) = set_path(value);
                health(i,(time_gone+1)) = health(i,(time_gone)) - 1; % Update health
-               not_eating(i,1) = not_eating(i,1) +1;   % Not eating    
+               not_eating(i,1) = not_eating(i,1) +1;   % Not eating
+               path = 1; % the chciken now has a path to transverse 
+        end 
+        end
+      
            end 
            
       
-        end 
+         
 
 if graphing == 1
             
@@ -240,7 +260,7 @@ if graphing == 1
             writeVideo(writerObj, frame);
 end 
  
-    end 
+    
 
         %% Finds the current health of all chickens
         current_health = health(:, (time_gone+1));
