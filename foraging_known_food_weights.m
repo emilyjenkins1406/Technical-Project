@@ -201,20 +201,32 @@ dead = 0;
                    not_eating(i,1) = not_eating(i,1) +1;   % Not eating   
                
            %% if needs to find a source to go to 
-           else 
-                
+           else    
                % Finding the distance from the current position to all food sources
                d = distances(G, positions_chickens(i,(time_gone)), food, 'Method','unweighted'); % unweighted graph
+               
+               % check to see if any of the food points are too far away that the chicken will die - 0's mean they wont make it
+               will_die = d < 0; 
+               indices = find(will_die==0);
+
                % Makes sure that the distances are in order with their
                % correpsonding amount of food at each food source
                move_to = [food_position; d; amount_of_food];
-               [B, I] = sort(move_to(2, :));
-               move_to(2, :) = B;
-               move_to(3, :) = move_to(3, I); % "shuffle" the third row to match the sorting order
-               move_to(1, :) = move_to(1, I); % "shuffle" the third row to match the sorting order
-               steps_per_food = bsxfun(@rdivide,move_to(3,:),move_to(2,:)); % divides the amount of food by the number of steps to each food source
-               [~, index] = max(steps_per_food); % picks the max steps per 'food'
-               set_path = shortestpath(G,positions_chickens(i,(time_gone)),(move_to(1, index)), 'Method','unweighted'); % finds shortest path to selcted food position
+               move_to_none_left = move_to; % used if the chicken is going to die but 'tries' to get to a food source
+               move_to(:,indices) = []; % removing collumns that the agent wont be able to make it too
+               
+               if isempty(move_to) == 1 % if the chicken wont make it anywhere so a random food source is picked for them to 'try' get too
+                    set_path = shortestpath(G,positions_chickens(i,(time_gone)), food_position(randi(length(food_position),1)), 'Method','unweighted'); % finds shortest path to selcted food position
+                    
+               else % if the chicken can make it 
+                   [B, I] = sort(move_to(2, :));
+                   move_to(2, :) = B;
+                   move_to(3, :) = move_to(3, I); % "shuffle" the third row to match the sorting order
+                   move_to(1, :) = move_to(1, I); % "shuffle" the third row to match the sorting order
+                   steps_per_food = bsxfun(@rdivide,move_to(3,:),move_to(2,:)); % divides the amount of food by the number of steps to each food source
+                   [~, index] = max(steps_per_food); % picks the max steps per 'food' where now (move_to(1, index)) will be node we want to go too
+                   set_path = shortestpath(G,positions_chickens(i,(time_gone)),(move_to(1, index)), 'Method','unweighted'); % finds shortest path to selcted food position
+                end
                % checks how far away the position is
                if length(set_path) == 1
                    value = 1;
@@ -225,6 +237,7 @@ dead = 0;
                health(i,(time_gone+1)) = health(i,(time_gone)) - 1; % Update health
                not_eating(i,1) = not_eating(i,1) +1;   % Not eating
                path = 1; % the chciken now has a path to transverse 
+                
         end 
         end
       
@@ -306,8 +319,8 @@ end
         percentage_of_deaths(end +1) = mean(deaths)*100/chickens; % the percentage of deaths of all chcikens
         variances(isnan(variances)) = []; % gets rid of nan values
         average_variance(end +1) = mean(variances);
-fprintf('Average Minimum Health = %f \n',average_min_health);
-fprintf('Average Movings On = %f.\n',average_movings_on);
-fprintf('Percentage of Eating = %f.\n',percentage_of_eating);
-fprintf('Percentage of Deaths = %f.\n',percentage_of_deaths);
-fprintf('Minium Health Variance  = %f.\n',average_variance);
+% fprintf('Average Minimum Health = %f \n',average_min_health);
+% fprintf('Average Movings On = %f.\n',average_movings_on);
+% fprintf('Percentage of Eating = %f.\n',percentage_of_eating);
+% fprintf('Percentage of Deaths = %f.\n',percentage_of_deaths);
+% fprintf('Minium Health Variance  = %f.\n',average_variance);
