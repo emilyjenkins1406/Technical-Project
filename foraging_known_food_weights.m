@@ -1,33 +1,6 @@
  %% Chicken Foraging Simulation
-%function [positions_chickens, percentage_eating, dead, min_health, variance, moving_on] = foraging_known_food_weights(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount)
-%% Makes tables
-% Arrays
-all_food_eaten = [];
-number = [];
-health = [];
-deaths = [];
-eating = [];
-min_healths = [];
-variances = [];
-movings_on = [];
-average_min_health = [];
-average_movings_on = [];
-percentage_of_eating = []; 
-percentage_of_deaths = []; 
-average_variance = [];
+function [positions_chickens, percentage_eating, dead, min_health, variance, moving_on] = foraging_known_food_weights(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount)
 
-% Values
-dead = 0;
-
-% Inputs
-n = 10; % square matrix dimensions
-time = 50; % time to run for 
-food_source = 1; % number of positons of food
-starting_chicken_health = 5; % How long the chciken will live for
-food_amount = [10, 20]; % amount of food generated 
-chickens = 2;
-graphing = 1; % 1 = present 
-dominance_hierachy = 1; % present 
 
     % Values
     path = zeros(1,chickens); % chicken doesnt have a path set
@@ -93,7 +66,7 @@ dominance_hierachy = 1; % present
                 food(isnan(food)) = [];
     
                %% If the chicken has died health = 0 and position = NaN
-               if  health(i, (time_gone)) == 1 || health(i, (time_gone)) == 0 
+               if health(i, (time_gone)) == 1 || health(i, (time_gone)) == 0 
                     health(i,(time_gone+1)) = 0; % Update health
                     positions_chickens(i,(time_gone+1)) = NaN;
     
@@ -205,7 +178,7 @@ dominance_hierachy = 1; % present
                    
                %% if needs to find a source to go to 
                else    
-                   % Finding the distance from the current position to all food sources
+                   % Finding the distance from the current position to all food sources               
                    d = distances(G, positions_chickens(i,(time_gone)), food, 'Method','unweighted'); % unweighted graph
 
                    % makes sure arrays are all the same length
@@ -226,9 +199,7 @@ dominance_hierachy = 1; % present
                            move_to = [all_food_positions(i,:); d; amount_of_food];
                        end 
 
-                   end 
-
-                         
+                   end  
 
                    % check to see if any of the food points are too far away that the chicken will die - 0's mean they wont make it
                    will_die = d < 0; 
@@ -261,16 +232,14 @@ dominance_hierachy = 1; % present
 
                    % Adds to all paths 
                    nan_values_needed = time - length(set_path);
-                   nan_values = NaN(1,nan_values_needed);
+                   nan_values = zeros(1,nan_values_needed);
                    path_for_matrix = cat(2,set_path,nan_values);
                  
-                    % makes sure that the paths isnt longer thena the time
-                    % we have 
-                    path_for_matrix = path_for_matrix(1:time);
+                   % makes sure that the paths isnt longer then the time
+                   % we have 
+                   path_for_matrix = path_for_matrix(1:time);
                    all_paths(i,:) = path_for_matrix;
-                   % Another move in on the path 
-                       path(1,i) = path(1,i) - 1;
-                   path(1,i) = length(set_path); % the chicken now has a path to transverse 
+                   path(1,i) = length(set_path) - 3; % the chicken now has a path to transverse 
 
                    % make path counter to see whast the next step is
                    step_counter = 3.*ones(1,chickens);
@@ -338,5 +307,5 @@ dominance_hierachy = 1; % present
     end 
 
 
-%end 
+end 
         

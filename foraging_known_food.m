@@ -229,4 +229,5 @@ if graphing == 1
     % Saves the movie.
     close(writerObj); 
 end 
+
 end
