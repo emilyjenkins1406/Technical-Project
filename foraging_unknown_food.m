@@ -12,7 +12,6 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
     healths = [];
 
     %% Dominance Hierachy  % lowest number = highest ranking
-    ranking = 1 : chickens; % where the highest ranking chicken is the first row of health and positions and so on
     moving_on = 0;
     dead = 0;
     
@@ -29,10 +28,8 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
     %% Creates the graph
     A = delsq(numgrid('S',n+2)); % generates the grid
     G = graph(A,'omitselfloops'); % creates a graph which omits self looping nodes
-
-    %% Finds the current health of all chickens
     current_health = health(:, (time_gone+1));
-    all_current_health = find(current_health < 2);
+
  
     %% While loop allowing the chicken to travel and eat food 
     while time_gone < (time - 1)  && dead < chickens % While there is still time left and there are still alikve chickens
@@ -42,8 +39,6 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
      %% All chickens taking a singular step
      for i = 1:chickens % making the higher ranking chicken move first
         
-        food = all_food_positions(i, :);
-        food(isnan(food)) = [];
         position = find(food_position == positions_chickens(i,time_gone)); % Finds the amount of food at a food source     
 
         %% If a healthy chicken is at any of the food sources where there is food and still time left
@@ -110,7 +105,7 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
                 neighbours(neighbours == positions_chickens(i,time_gone -1 )) = []; % gets rid of last visited node
            end
 
-           %% IF no possible points to visit inculde all
+           %% If no possible points to visit inculde all
                if length(neighbours) < 1 
                    neighbours = all_neighbours;
                end 
@@ -122,15 +117,13 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
 
         end 
       
-     end 
-     %% Finds the current health of all chickens
-     current_health = health(:, (time_gone+1));
-     all_current_health = find(current_health < 2);
-     dead = sum(current_health(:)==0);
-
+     end
     end 
+%% Finds the current health of all chickens
+ current_health = health(:, (time_gone+1));
+ dead = sum(current_health(:)==0);    
 
-%% Finding the min health of all the chickens ( minus the dead ones)
+%% Finding the min health of all the chickens (minus the dead ones)
 a = 0;
 for i = 1:chickens % collects the helath for chickens that survived
     if current_health(i) > 1
@@ -144,3 +137,4 @@ percentage_eating = (mean(eating)/(mean(eating)+mean(not_eating)))*100;
 min_health = min(healths, [], 'all'); % The min health of all chickens
 mean_health = mean(healths,2); % mean health for all alive chikens 
 variance = var(mean_health);
+end 

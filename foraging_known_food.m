@@ -24,7 +24,6 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
     healths = []; % collects healths
     
     %% Dominance Hierachy where the lowest number = highest ranking
-    ranking = 1 : chickens; % where the highest ranking chicken is the first row of health and positions and so on
     moving_on = 0; % counts how many times the chicken moves on
     dead = 0; % counts how many dead
     
@@ -37,27 +36,20 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
     time_gone = 0; % How much time has passed
     eating = zeros(chickens,1); % how mnay timesteps are spent eating
     not_eating = ones(chickens,1); % adding one for the first timestep
-    low_health = 40; % settingthe lower limit after when it is passed the chciken starts looking for food again.
     all = 0;
     time_steps = 0;
-    amount = 0;
-    
-    %% Finds the current health of all chickens
     current_health = health(:, (time_gone+1));
-    all_current_health = find(current_health < 2);
 
     %% While there is still time left and a chicken is still in health
     while time_gone < (time -1) && dead < chickens
-  
             
             time_gone = time_gone +1;  % Time passing
-    %% Highligting nodes on the graph 
     
         for i = 1: chickens % making the higher ranking chicken move first
             
-            %% Finding all possible food sources
-            food = all_food_positions(i, :); 
-            food(isnan(food)) = [];
+           %% Finding all possible food sources
+           food = all_food_positions(i, :); 
+           food(isnan(food)) = [];
 
            %% If the chicken has died health = 0 and position = NaN
            if  health(i, (time_gone)) == 1 || health(i, (time_gone)) == 0 
@@ -110,8 +102,7 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
                    neighbours = neighbors(G,positions_chickens(i,time_gone)); % Working out the nodes the chicken can travel to
                    positions_chickens(i,(time_gone+1)) = neighbours(randi(length(neighbours),1));
                    not_eating(i,1) = not_eating(i,1) +1;   % Not eating
-                   health(i,(time_gone+1)) = health(i,(time_gone)) - 1; % Update health
-                   
+                   health(i,(time_gone+1)) = health(i,(time_gone)) - 1; % Update health   
                else
                    position = find(all_food_positions(i)== positions_chickens(i,time_gone));
                    % Amount of time eating
@@ -124,7 +115,7 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
                    health(i,(time_gone+1)) = health(i,(time_gone)) + 1;
                    % When the food runs out at the source remove position
                    if amount_of_food(position) == 0
-                       [row, col] = find(all_food_positions(i) == positions_chickens(i,time_gone));
+                       [~, col] = find(all_food_positions(i) == positions_chickens(i,time_gone));
                        all_food_positions(:, col) = [];
                        amount_of_food(position) = [];
                     end 
@@ -162,7 +153,6 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
                d = distances(G, positions_chickens(i,(time_gone)), food, 'Method','unweighted'); % unweighted graph
                [~, index] = min(d);
                path = shortestpath(G,positions_chickens(i,(time_gone)),food(index), 'Method','unweighted');
-
                % checks how far away the position is
                if length(path) == 1
                    value = 1;
@@ -173,44 +163,40 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
                health(i,(time_gone+1)) = health(i,(time_gone)) - 1; % Update health
                not_eating(i,1) = not_eating(i,1) +1;   % Not eating    
            end 
-           
-      
+             
         end 
 
+%% If grpah was picked
 if graphing == 1
             
      p = plot(G, 'XData',x(:), 'YData',y(:)); % plotting the graph
      highlight(p,food_position,'NodeColor','yellow') % Makes a food position yellow if it doesnt have a chicken there
- 
-        for i = 1 : chickens
-                        
+        for i = 1 : chickens           
            if isnan(positions_chickens(i,time_gone+1)) %% dead as there is a nan value
                plotting = positions_chickens(i,:);
                plotting(isnan(plotting)) = [];
-               highlight(p, plotting(end),'NodeColor','black', 'Marker', 'h', 'MarkerSize',8)  % Makes the chickens route green
-          
+               highlight(p, plotting(end),'NodeColor','black', 'Marker', 'h', 'MarkerSize',8)  % Makes the chickens route green         
            else              
                highlight(p, positions_chickens(i,:),'NodeColor','green', 'Marker', 'h', 'MarkerSize',8)  % Makes the chickens route green
            end 
-
            if ~isempty(find(food_position == positions_chickens(:,time_gone), 1))
                 [~, col] = find(food_position == positions_chickens(:,time_gone));
                 eating_here = food_position(:,col);
                  highlight(p,eating_here,'NodeColor','magenta','Marker', 'h', 'MarkerSize',8) % Makes a food position yellow if it doesnt have a chicken there
            end 
         end 
-%% Takes a frame
-            frame = getframe();
-            writeVideo(writerObj, frame);
+
+    %% Takes a frame
+    frame = getframe();
+    writeVideo(writerObj, frame);
+    lose(writerObj); 
 end 
  
     end 
 
-        %% Finds the current health of all chickens
-        current_health = health(:, (time_gone+1));
-        all_current_health = find(current_health < 2);    
-        dead = sum(current_health(:)==0);
-
+%% Finds the current health of all chickens
+current_health = health(:, (time_gone+1)); 
+dead = sum(current_health(:)==0);
 
 %% Finding the min health of all the chickens ( minus the dead ones)
 for i = 1:chickens % collects the health for chickens that survived
@@ -225,9 +211,5 @@ percentage_eating = (mean(eating)/(mean(eating)+mean(not_eating)))*100;
 min_health = min(healths, [], 'all'); % The min health of all chickens
 mean_health = mean(healths,2); % mean health for all alive chikens 
 variance = var(mean_health);
-if graphing == 1
-    % Saves the movie.
-    close(writerObj); 
-end 
 
 end

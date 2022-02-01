@@ -84,7 +84,7 @@ graphing = 0; % 1 = present
 
     end
 
-%% Known + Weightings
+%% KNOWN + WEIGHTINGS
 for dominance_hierachy = 0:1
 
         for runs = 1:50
