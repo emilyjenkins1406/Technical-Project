@@ -1,5 +1,5 @@
  %% Chicken Foraging Simulation
-function [positions_chickens, percentage_eating, dead, min_health, variance, moving_on] = foraging_known_food_weights(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount)
+function [positions_chickens, percentage_eating, dead, min_health, variance, moving_on, dominant_health, subordinate_health] = foraging_known_food_weights(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount)
 
 
     %% Values
@@ -102,6 +102,7 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
                if ~isempty(find(positions_chickens(i,time_gone) == positions_chickens(1:(i-1),time_gone), 1))  && i > 1 && dominance_hierachy == 1 
                    % spends one timestep there realsies there is a higher ranking chicken so moves on
                    moving_on = moving_on + 1;
+                   
                    % removes the food positon as a further possibilty
                    [~, col] = find(all_food_positions(i) == positions_chickens(:,time_gone));
                    all_food_positions(i, col) = NaN; 
@@ -283,7 +284,13 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
     %% Finds the current health of all chickens
     current_health = health(:, (time_gone+1));  
     dead = sum(current_health(:)==0);
-    
+
+    %% Finds the current health of the most dominant agent
+    dominant_health = current_health(1,1);
+
+    %% Finds the current health of the most subordinate agent 
+    subordinate_health = current_health(chickens,1);
+
     %% Finding the min health of all the chickens ( minus the dead ones)
     for i = 1:chickens % collects the health for chickens that survived
         if current_health(i) > 1

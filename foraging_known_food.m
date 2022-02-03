@@ -1,5 +1,15 @@
  %% Chicken Foraging Simulation
-function [positions_chickens, percentage_eating, dead, min_health, variance, moving_on] = foraging_known_food(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount)
+function [positions_chickens, percentage_eating, dead, min_health, variance, moving_on, dominant_health, subordinate_health] = foraging_known_food(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount)
+
+% Inputs
+n = 10; % square matrix dimensions
+time = 100; % time to run for 
+food_source = 15; % number of positons of food
+starting_chicken_health = 10; % How long the chciken will live for
+food_amount = [10, 20]; % amount of food generated 
+chickens = 10;
+graphing = 0; % 1 = present graph
+dominance_hierachy = 1; %present 
 
     %% Creates the graph
     A = delsq(numgrid('S',n+2)); % generates the grid
@@ -197,6 +207,12 @@ end
 %% Finds the current health of all chickens
 current_health = health(:, (time_gone+1)); 
 dead = sum(current_health(:)==0);
+
+%% Finds the current health of the most dominant agent
+dominant_health = current_health(1,1);
+
+%% Finds the current health of the most subordinate agent 
+subordinate_health = current_health(chickens,1);
 
 %% Finding the min health of all the chickens ( minus the dead ones)
 for i = 1:chickens % collects the health for chickens that survived

@@ -1,6 +1,6 @@
 %% Chicken Foraging Simulation
 
-function [positions_chickens, percentage_eating, dead, min_health, variance, moving_on] = foraging_unknown_food(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount)
+function [positions_chickens, percentage_eating, dead, min_health, variance, moving_on, dominant_health, subordinate_health] = foraging_unknown_food(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount)
 
     %% Creates food and chicken positionsz
     positions = randperm(n.^2,(chickens+food_source)); % determines the positons of chickens and food 
@@ -122,6 +122,12 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
 %% Finds the current health of all chickens
  current_health = health(:, (time_gone+1));
  dead = sum(current_health(:)==0);    
+ 
+ %% Finds the current health of the most dominant agent
+    dominant_health = current_health(1,1);
+
+ %% Finds the current health of the most subordinate agent 
+    subordinate_health = current_health(chickens,1);
 
 %% Finding the min health of all the chickens (minus the dead ones)
 a = 0;
