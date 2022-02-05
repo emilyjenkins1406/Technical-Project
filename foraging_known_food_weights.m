@@ -1,6 +1,5 @@
  %% Chicken Foraging Simulation
-function [positions_chickens, percentage_eating, dead, min_health, variance, moving_on, dominant_health, subordinate_health] = foraging_known_food_weights(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount)
-
+function [positions_chickens, percentage_eating, dead, min_health, variance, moving_on, all_agent_health] = foraging_known_food_weights(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount)
 
     %% Values
     path = zeros(1,chickens); % chicken doesnt have a path set
@@ -199,7 +198,12 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
                            elements_of_d = elements_of_d + 1;
                        end
                     end 
-                  move_to = [all_food_positions_2; d; amount_of_food_2];
+                    %% Add a penalty for far away food - reduces the 'food_per_step'
+                     d_with_penalties = [];
+                    for penalty = 1: length(d)
+                        d_with_penalties(end+1) = d(penalty)*1.005^(d(penalty));
+                    end
+                  move_to = [all_food_positions_2; d_with_penalties; amount_of_food_2];
                % If there wasnt a NaN present
                else 
                    all_food_positions_3 = all_food_positions(i,:);
@@ -211,14 +215,18 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
                            amount_of_food_3(remove_position - elements_of_d) = [];
                            elements_of_d = elements_of_d + 1;
                        end
-                    end 
-                   move_to = [all_food_positions_3; d; amount_of_food_3];
+                   end 
+                   %% Add a penalty for far away food - reduces the 'food_per_step'
+                    d_with_penalties = [];
+                    for penalty = 1: length(d)
+                        d_with_penalties(end+1) = d(penalty)*1.005^(d(penalty));
+                    end
+                   move_to = [all_food_positions_3; d_with_penalties; amount_of_food_3];
                end 
-
-               %% If the chicken wont make it anywhere so a random food source is picked for them to 'try' get too
-               if isempty(move_to) == 1 
+               
+               if isempty(move_to) == 1 % If the agent wont make it anywhere so a random food source is picked for them to 'try' get too
                     set_path = shortestpath(G,positions_chickens(i,(time_gone)), food_position(randi(length(food_position),1)), 'Method','unweighted'); % finds shortest path to selcted food position
-               else % if the chicken can make it 
+               else % if the agent can make it 
                    [B, I] = sort(move_to(2, :));
                    move_to(2, :) = B;
                    move_to(3, :) = move_to(3, I); % "shuffle" the third row to match the sorting order
@@ -304,6 +312,21 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
     min_health = min(healths, [], 'all'); % The min health of all chickens
     mean_health = mean(healths,2); % mean health for all alive chikens 
     variance = var(mean_health); 
+    
+    %% Calculating the health for all agents agent after a burn in of 10 timesteps
+    all_agent_health = [];
+    for agent = 1:chickens 
+        a = ones(1, time - 11) * 0.9;
+        b = 1:(time - 11);
+        c = a.^b;
+        bottom_sum = 1 + sum(c);
+        upper_sum_healths = health(agent,11:time); % the one here indicates that its the firs agent = the most dominant!
+        upper_sum_gammas = ones(1,1);
+        upper_sum_gammas = horzcat(upper_sum_gammas,c);
+        upper_sum = sum(upper_sum_gammas.*upper_sum_healths);
+        health_of_agent = upper_sum/bottom_sum;
+        all_agent_health(end+ 1) = health_of_agent;
+    end 
 
 end 
         
