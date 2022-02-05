@@ -7,6 +7,8 @@ average_variance = [];
 average_dominant_health = [];
 avergae_subordinate_health = [];
 agents_health = [];
+percentage_of_agents_deaths = [];
+all_agents_eating = [];
 
 % Inputs
 amount_of_runs = 200;
@@ -32,10 +34,12 @@ graphing = 0; % 1 = present graph
         movings_on = [];
         all_agents_health = [];
         dead = 0;
+        agents_dead = [];
+        agents_eating = [];
 
         for runs = 1:amount_of_runs
               
-            [positions_chickens, percentage_eating, dead, min_health, variance, moving_on, all_agent_health] = foraging_unknown_food(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount);
+            [positions_chickens, percentage_eating, dead, min_health, variance, moving_on, all_agent_health, deadness, agent_eating] = foraging_unknown_food(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount);
             eating(end+1) = percentage_eating;
             variances(end+1)= variance;
             movings_on(end+1)= moving_on;
@@ -48,10 +52,15 @@ graphing = 0; % 1 = present graph
             end 
     
            all_agents_health = [all_agents_health; all_agent_health];
-        
+           agents_dead = [agents_dead; deadness];
+           agents_eating = [agents_eating; transpose(agent_eating)];          
+                   
         end
-
+        
+        all_agents_eating = [all_agents_eating; mean(agents_eating)];
         agents_health = [agents_health; mean(all_agents_health)];
+        sum_of_agents_dead = (sum(agents_dead)./amount_of_runs).*100;
+        percentage_of_agents_deaths = [percentage_of_agents_deaths; sum_of_agents_dead];
         average_min_health(end +1) = mean(min_healths);
         average_movings_on(end +1) = mean(movings_on);
         percentage_of_eating(end +1) = mean(eating); % the average percentage of time a singualr chciken spends eating 
@@ -75,11 +84,13 @@ graphing = 0; % 1 = present graph
         movings_on = [];
         all_agents_health = [];
         dead = 0;
+        agents_dead = [];
+        agents_eating = [];
 
 
         for runs = 1:amount_of_runs
         
-            [positions_chickens, percentage_eating, dead, min_health, variance, moving_on, all_agent_health] = foraging_known_food(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount);
+            [positions_chickens, percentage_eating, dead, min_health, variance, moving_on, all_agent_health, deadness, agent_eating] = foraging_known_food(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount);
             eating(end+1) = percentage_eating;
             variances(end+1)= variance;
             movings_on(end+1)= moving_on;
@@ -92,10 +103,15 @@ graphing = 0; % 1 = present graph
             end     
 
            all_agents_health = [all_agents_health; all_agent_health];
-
+           agents_dead = [agents_dead; deadness];
+           agents_eating = [agents_eating; transpose(agent_eating)];          
+                   
         end
-         
+
+        all_agents_eating = [all_agents_eating; mean(agents_eating)];
         agents_health = [agents_health; mean(all_agents_health)];
+        sum_of_agents_dead = (sum(agents_dead)./amount_of_runs).*100;
+        percentage_of_agents_deaths = [percentage_of_agents_deaths; sum_of_agents_dead];
         average_min_health(end +1) = mean(min_healths);
         average_movings_on(end +1) = mean(movings_on);
         percentage_of_eating(end +1) = mean(eating); % the average percentage of time a singualr chciken spends eating 
@@ -118,10 +134,12 @@ for dominance_hierachy = 0:1
         movings_on = [];
         all_agents_health = [];
         dead = 0;
+        agents_dead = [];
+        agents_eating = [];
 
         for runs = 1:amount_of_runs
               
-            [positions_chickens, percentage_eating, dead, min_health, variance, moving_on, all_agent_health] = foraging_known_food_weights(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount);
+            [positions_chickens, percentage_eating, dead, min_health, variance, moving_on, all_agent_health, deadness, agent_eating] = foraging_known_food_weights(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount);
             eating(end+1) = percentage_eating;
             variances(end+1)= variance;
             movings_on(end+1)= moving_on;
@@ -134,10 +152,14 @@ for dominance_hierachy = 0:1
             end 
            
            all_agents_health = [all_agents_health; all_agent_health];
-          
+           agents_dead = [agents_dead; deadness];
+           agents_eating = [agents_eating; transpose(agent_eating)];          
                    
         end
+        all_agents_eating = [all_agents_eating; mean(agents_eating)];
         agents_health = [agents_health; mean(all_agents_health)];
+        sum_of_agents_dead = (sum(agents_dead)./amount_of_runs).*100;
+        percentage_of_agents_deaths = [percentage_of_agents_deaths; sum_of_agents_dead];
         average_min_health(end +1) = mean(min_healths);
         average_movings_on(end +1) = mean(movings_on);
         percentage_of_eating(end +1) = mean(eating); % the average percentage of time a singualr chciken spends eating 
@@ -146,7 +168,7 @@ for dominance_hierachy = 0:1
         average_variance(end +1) = mean(variances);
 end 
 
-% %% MAKING  A TABLE
+%% MAKING  A TABLE
 model = ["Unknown food"; "Unknown food and Hierachy"; "Known food"; "Known food and Hierachy"; "Known food + weights"; "Known food and Hierachy + weights"];
 average_min_health = transpose(average_min_health);
 average_movings_on = transpose(average_movings_on);
