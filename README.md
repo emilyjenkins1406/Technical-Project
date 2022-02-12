@@ -20,5 +20,5 @@ foraging_known_food_weights.m :  This creates a simulation of agetns whereby the
 ### Other files:
 
 plotgraphh.m : This is used to plot my grpahs in pdf form which is compatiable with Latex. 
-
+plotting_multiple_agents.m : This is used to plot the percetnage of deaths and eating for various agents from multiple simualtions. 
 
