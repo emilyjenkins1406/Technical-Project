@@ -1,22 +1,24 @@
 # Techical Project - ZC18822
-# Understanding the Effect of a Dominance Hierarchy on the Foraging Patterns of Social Animals
+## Understanding the Effect of a Dominance Hierarchy on the Foraging Patterns of Social Animals
 
-### Foraging:
+### Main:
 
-## Unknown:
+foraging.m : This is the main file from which the other simualtions are run and extracted is compiled.
 
-euler+runge_timesteps.py : Euler and Runge-Kutta routines that generate a series of numerical solution estimates for ODEs.
+### Unknown Model:
 
-## Known:
+foraging_unknown_food.m : This creates a simulation of agents where the food loactions are unknown. 
 
-numericalshooting.py : Using shooting to solve a boundary value problem of ODEs.
+### Known Model
 
-testscript.py : A test script that runs my shooting code and tests its solutions. 
+foraging_known_food.m : This creates a simulation of agents whereby the food locations are known.
 
-numericalcontinuation.py : Performing natural parameter continuation to find solutions for ODEs.
+### Known with Weightings Model
 
-## Known with Weightings:
+foraging_known_food_weights.m :  This creates a simulation of agetns whereby the food lociations are known weightings/penalties are applied to allow an agent to pick the optimal food location to go to.
 
-1DDiffusion.py : A implementation of Forward Euler, Backward Euler and Crank-Nicholson to numerically solve partial differential equations. 
+#### Other files:
+
+plotgraphh.m : This is used to plot my grpahs in pdf form which is compatiable with Latex. 
 
 
