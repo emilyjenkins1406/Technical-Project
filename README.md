@@ -17,7 +17,7 @@ foraging_known_food.m : This creates a simulation of agents whereby the food loc
 
 foraging_known_food_weights.m :  This creates a simulation of agetns whereby the food lociations are known weightings/penalties are applied to allow an agent to pick the optimal food location to go to.
 
-#### Other files:
+### Other files:
 
 plotgraphh.m : This is used to plot my grpahs in pdf form which is compatiable with Latex. 
 
