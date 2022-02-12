@@ -15,7 +15,7 @@ foraging_known_food.m : This creates a simulation of agents whereby the food loc
 
 ### Known with Weightings Model
 
-foraging_known_food_weights.m :  This creates a simulation of agetns whereby the food lociations are known weightings/penalties are applied to allow an agent to pick the optimal food location to go to.
+foraging_known_food_weights.m :  This creates a simulation of agetns whereby the food locations are known weightings/penalties are applied to allow an agent to pick the optimal food location to go to.
 
 ### Other files:
 
