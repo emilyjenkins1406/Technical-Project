@@ -1,7 +1,7 @@
-# Techical Project - zc18822
+# Techical Project - ZC18822
 # Understanding the Effect of a Dominance Hierarchy on the Foraging Patterns of Social Animals
 
-## Foraging:
+### Foraging:
 
 ## Unknown:
 
