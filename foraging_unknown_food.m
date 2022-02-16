@@ -1,6 +1,6 @@
 %% Chicken Foraging Simulation
 
-function [positions_chickens, percentage_eating, dead, min_health, variance, moving_on, all_agent_health, deadness, eating] = foraging_unknown_food(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount)
+function [positions_chickens, percentage_eating, dead, min_health, variance, moving_on, all_agent_health, deadness, eating, percentage_visited,  number_of_nodes] = foraging_unknown_food(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount)
 
     %% Creates food and chicken positionsz
     positions = randperm(n.^2,(chickens+food_source)); % determines the positons of chickens and food 
@@ -8,9 +8,10 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
     positions_chickens(:, 1) = positions(1:chickens); % adds first position of the chicken to the matrix 
     food_position = positions(chickens + 1:end); % picks a random position 4 food sources
     all_food_positions = kron(food_position,ones(chickens,1));
+    starting_food_positions = all_food_positions;
     amount_of_food = randi(food_amount, 1, food_source); % makes amount of food between two values cant be 1 as then for 1:1 doesnt work 
     healths = [];
-
+    food_sources_visited = [];
     %% Dominance Hierachy  % lowest number = highest ranking
     moving_on = 0;
     dead = 0;
@@ -48,7 +49,7 @@ function [positions_chickens, percentage_eating, dead, min_health, variance, mov
             positions_chickens(i,(time_gone+1)) = NaN;
       
         elseif ~isempty(position)  && amount_of_food(position) > 0 && time_gone < time    
-                
+                 food_sources_visited(end+1) = positions_chickens(i,time_gone);
             %% if another chicken and dom hierachy present 
                 if ~isempty(find(positions_chickens(i,time_gone) == positions_chickens(1:(i-1),time_gone), 1))  && i > 1 && dominance_hierachy == 1  % another chciken there
                    % Amount of time eating
@@ -147,6 +148,10 @@ percentage_eating = (mean(eating)/(mean(eating)+mean(not_eating)))*100;
 min_health = min(healths, [], 'all'); % The min health of all chickens
 mean_health = mean(healths,2); % mean health for all alive chikens 
 variance = var(mean_health);
+%% Finds how many sources have been visited
+    b = unique(food_sources_visited,['stable']);
+    percentage_visited = (length(b)/food_source)*100;
+      number_of_nodes = unique(positions_chickens,['stable']);
 
     %% Calculating the health for all agents agent after a burn in of 10 timesteps
     all_agent_health = [];

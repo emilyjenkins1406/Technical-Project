@@ -1,7 +1,8 @@
  %% Chicken Foraging Simulation
- function [positions_chickens, percentage_eating, dead, min_health, variance, moving_on, all_agent_health, deadness, eating] = foraging_known_food_weights(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount)
+ function [positions_chickens, percentage_eating, dead, min_health, variance, moving_on, all_agent_health, deadness, eating, percentage_visited, number_of_nodes] = foraging_known_food_weights(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount)
 
     %% Values
+    agents_seen_each_other = [];
     path = zeros(1,chickens); % chicken doesnt have a path set
     all_paths = zeros(chickens,time); % path to transverse 
     moving_on = 0; % counts how many times the chicken moves on
@@ -11,6 +12,8 @@
     not_eating = ones(chickens,1); % adding one for the first timestep
     all = 0;
     time_steps = 0;
+    food_sources_visited = [];
+    
        
     %% Creates the graph
     A = delsq(numgrid('S',n+2)); % generates the grid
@@ -32,6 +35,7 @@
     positions_chickens(:, 1) = positions(1:chickens); % adds first position of the chicken to the matrix 
     food_position = positions(chickens + 1:end); % picks a random position 4 food sources
     all_food_positions = kron(food_position,ones(chickens,1)); % duplicates food positoions for all chickens
+    starting_food_positions = all_food_positions;
     amount_of_food = randi(food_amount, 1, food_source); % makes amount of food between two values cant be 1 as then for 1:1 doesnt work 
     healths = []; % collects healths
         
@@ -53,7 +57,6 @@
             %% Finding all possible food sources
             food = all_food_positions(i, :); 
             food(isnan(food)) = [];
-
             %% If the chicken has died health = 0 and position = NaN
             if health(i, (time_gone)) == 1 || health(i, (time_gone)) == 0 
 
@@ -84,7 +87,7 @@
                     end
                end
                
-               %% But if this means there are no possible points to visit inculde all (make this to choose least higher chicken soon)
+               %% But if this means there are no possible points to visit
                if length(neighbours) < 1 
                    neighbours = all_neighbours;
                end 
@@ -96,15 +99,15 @@
     
            %% When the chicken is at a food source
            elseif ~isempty(find(all_food_positions(i,:) == positions_chickens(i,time_gone), 1))
-               
-               %% If there is another chicken and the hierachy is present 
+    
+               food_sources_visited(end+1) = positions_chickens(i,time_gone);
+               %% If there is a higher ranking agent and the hierachy is present 
                if ~isempty(find(positions_chickens(i,time_gone) == positions_chickens(1:(i-1),time_gone), 1))  && i > 1 && dominance_hierachy == 1 
                    % spends one timestep there realsies there is a higher ranking chicken so moves on
                    moving_on = moving_on + 1;
-                   
-                   % removes the food positon as a further possibilty
-                   [~, col] = find(all_food_positions(i) == positions_chickens(:,time_gone));
-                   all_food_positions(i, col) = NaN; 
+                   % collects info to be used when deciding when to come back
+                   new_spotting = [i; 0; time_gone; positions_chickens(i,time_gone)]; % fill in other chicken when i can
+                   agents_seen_each_other = [agents_seen_each_other, new_spotting];
                    neighbours = neighbors(G,positions_chickens(i,time_gone)); % Working out the nodes the chicken can travel to
                    positions_chickens(i,(time_gone+1)) = neighbours(randi(length(neighbours),1));
                    not_eating(i,1) = not_eating(i,1) +1;   % Not eating
@@ -143,6 +146,7 @@
                             neighbours(find(neighbours == A(ii), 1,'first')) = [];
                         end
                         [~, col] = find(all_food_positions(i) == positions_chickens(:,time_gone));
+ 
                         all_food_positions(i, col) = NaN;
                     end
                end
@@ -170,7 +174,7 @@
            %% if needs to find a source to go to 
             else    
 
-               % Finding the distance from the current position to all food sources               
+               %% Finding the distance from the current position to all food sources               
                d = distances(G, positions_chickens(i,(time_gone)), food, 'Method','unweighted'); % unweighted graph
 
                %% Makes sure arrays are all the same length
@@ -199,14 +203,18 @@
                        end
                     end 
                     %% Add a penalty for far away food - reduces the 'food_per_step'
-                     d_with_penalties = [];
+                    penalties_distance = [];
                     for penalty = 1: length(d)
-                        d_with_penalties(end+1) = d(penalty)*1.005^(d(penalty));
+                        penalties_distance(end+1) = 1 - 0.8^(d(penalty));
                     end
-                  move_to = [all_food_positions_2; d_with_penalties; amount_of_food_2];
+                   
+
+
+                  move_to = [all_food_positions_2; d; amount_of_food_2];
                % If there wasnt a NaN present
                else 
                    all_food_positions_3 = all_food_positions(i,:);
+                  
                    amount_of_food_3 = amount_of_food;
                    for  remove_position = 1:elements_of_d
                        if remove(remove_position) == 1
@@ -214,14 +222,42 @@
                            all_food_positions_3(remove_position - elements_of_d) = [];
                            amount_of_food_3(remove_position - elements_of_d) = [];
                            elements_of_d = elements_of_d + 1;
+                           
                        end
+ 
                    end 
                    %% Add a penalty for far away food - reduces the 'food_per_step'
-                    d_with_penalties = [];
+                    penalties_distance = [];
                     for penalty = 1: length(d)
-                        d_with_penalties(end+1) = d(penalty)*1.005^(d(penalty));
+                        penalties_distance(end+1) = 0.9^(d(penalty)/5);
                     end
-                   move_to = [all_food_positions_3; d_with_penalties; amount_of_food_3];
+            %% Add a penalty if another agent has been seen at a source
+            penalties = [];
+           if length(agents_seen_each_other) > 1 
+            % find where this agent has seen others in the past 
+            indices = find(agents_seen_each_other(1,:)== i);
+            agent_seen_others = agents_seen_each_other(:,[indices]);
+ 
+           if ~isempty(agent_seen_others) % see if the agent has seen others
+               for food_running = 1: length(amount_of_food_3) % run through all the food positions
+                   if sum(agent_seen_others(4,:)==all_food_positions_3(food_running)) > 0 
+                       [~, column] = find(agent_seen_others(4,:)==all_food_positions_3(food_running));
+                        % find the most recent time another memebr was seen and apply a penalty 
+                       time_when_seen = agent_seen_others(3,max(column)); 
+                       last_seen = time_gone - time_when_seen;
+                       seen_penalty = 1 - 0.9^(last_seen);
+                       penalties(end+1) = seen_penalty; % pentalty added
+                      
+                   else 
+                       penalties(end+1) = 1; % no pentalty added
+                   end 
+          
+               end 
+           end
+               
+           end 
+
+           move_to = [all_food_positions_3; d; amount_of_food_3];
                end 
                
                if isempty(move_to) == 1 % If the agent wont make it anywhere so a random food source is picked for them to 'try' get too
@@ -232,6 +268,13 @@
                    move_to(3, :) = move_to(3, I); % "shuffle" the third row to match the sorting order
                    move_to(1, :) = move_to(1, I); % "shuffle" the third row to match the sorting order
                    steps_per_food = bsxfun(@rdivide,move_to(3,:),move_to(2,:)); % divides the amount of food by the number of steps to each food source
+
+                   if length(penalties) >1
+                    steps_per_food = steps_per_food.*penalties; % applying penalties for seeing agents
+                   end 
+
+                   steps_per_food = steps_per_food.*penalties_distance; % applying penalties for distance
+
                    [~, index] = max(steps_per_food); % picks the max steps per 'food' where now (move_to(1, index)) will be node we want to go too
                    set_path = shortestpath(G,positions_chickens(i,(time_gone)),(move_to(1, index)), 'Method','unweighted'); % finds shortest path to selcted food position
                end
@@ -331,6 +374,12 @@
         health_of_agent = upper_sum/bottom_sum;
         all_agent_health(end+ 1) = health_of_agent;
     end 
+
+    %% Finds how many sources have been visited
+    b = unique(food_sources_visited,['stable']);
+    percentage_visited = (length(b)/food_source)*100;
+    number_of_nodes = unique(positions_chickens,['stable']);
+
 
 end 
         
