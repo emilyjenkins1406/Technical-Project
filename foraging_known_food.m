@@ -1,5 +1,5 @@
  %% Chicken Foraging Simulation
- function [positions_chickens, percentage_eating, dead, min_health, variance, moving_on, all_agent_health, deadness, eating, percentage_visited,  number_of_nodes] = foraging_known_food(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount)
+ function [positions_chickens, percentage_eating, dead, min_health, variance, moving_on, all_agent_health, deadness, eating, percentage_visited,  number_of_nodes, number_of_nodes_agents ] = foraging_known_food(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount)
 
     %% Creates the graph
     A = delsq(numgrid('S',n+2)); % generates the grid
@@ -227,6 +227,8 @@ variance = var(mean_health);
     b = unique(food_sources_visited,['stable']);
     percentage_visited = (length(b)/food_source)*100;
       number_of_nodes = unique(positions_chickens,['stable']);
+%% Finds how mnay different nodes the agents have been on 
+number_of_nodes_agents = arrayfun(@(x) numel(unique(positions_chickens(x,:))), (1:size(positions_chickens,1)).');
 
     %% Calculating the health for all agents agent after a burn in of 10 timesteps
     all_agent_health = [];

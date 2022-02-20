@@ -1,6 +1,6 @@
 %% Chicken Foraging Simulation
 
-function [positions_chickens, percentage_eating, dead, min_health, variance, moving_on, all_agent_health, deadness, eating, percentage_visited,  number_of_nodes] = foraging_unknown_food(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount)
+function [positions_chickens, percentage_eating, dead, min_health, variance, moving_on, all_agent_health, deadness, eating, percentage_visited,  number_of_nodes, number_of_nodes_agents] = foraging_unknown_food(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount)
 
     %% Creates food and chicken positionsz
     positions = randperm(n.^2,(chickens+food_source)); % determines the positons of chickens and food 
@@ -152,6 +152,8 @@ variance = var(mean_health);
     b = unique(food_sources_visited,['stable']);
     percentage_visited = (length(b)/food_source)*100;
       number_of_nodes = unique(positions_chickens,['stable']);
+      %% Finds how mnay different nodes the agents have been on 
+number_of_nodes_agents = arrayfun(@(x) numel(unique(positions_chickens(x,:))), (1:size(positions_chickens,1)).');
 
     %% Calculating the health for all agents agent after a burn in of 10 timesteps
     all_agent_health = [];

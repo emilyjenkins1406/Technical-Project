@@ -1,5 +1,5 @@
  %% Chicken Foraging Simulation
- function [positions_chickens, percentage_eating, dead, min_health, variance, moving_on, all_agent_health, deadness, eating, percentage_visited, number_of_nodes] = foraging_known_food_weights(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount)
+ function [positions_chickens, percentage_eating, dead, min_health, variance, moving_on, all_agent_health, deadness, eating, percentage_visited, number_of_nodes, number_of_nodes_agents] = foraging_known_food_weights(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount)
 
     %% Values
     agents_seen_each_other = [];
@@ -374,7 +374,8 @@
         health_of_agent = upper_sum/bottom_sum;
         all_agent_health(end+ 1) = health_of_agent;
     end 
-
+%% Finds how mnay different nodes the agents have been on 
+number_of_nodes_agents = arrayfun(@(x) numel(unique(positions_chickens(x,:))), (1:size(positions_chickens,1)).');
     %% Finds how many sources have been visited
     b = unique(food_sources_visited,['stable']);
     percentage_visited = (length(b)/food_source)*100;
