@@ -7,6 +7,7 @@ average_variance = [];
 average_dominant_health = [];
 avergae_subordinate_health = [];
 agents_health = [];
+all_alive_agents_health = [];
 percentage_of_agents_deaths = [];
 all_agents_eating = [];
 all_deaths = [];
@@ -16,7 +17,7 @@ percentage_of_nodes_visited = [];
 average_agents_nodes = [];
 
 % Inputs
-amount_of_runs = 5; % amount of simulations
+amount_of_runs = 10; % amount of simulations
 n = 10; % square matrix dimensions
 time = 100; % time to run for 
 food_source = 10; % number of positons of food
@@ -36,6 +37,7 @@ graphing = 0; % 1 = present graph
         deaths = [];
         eating = [];
         min_healths = [];
+         alive_agents_health = [];
         variances = [];
         movings_on = [];
         all_agents_health = [];
@@ -47,7 +49,7 @@ graphing = 0; % 1 = present graph
 
         for runs = 1:amount_of_runs
               
-            [positions_chickens, percentage_eating, dead, min_health, variance, moving_on, all_agent_health, deadness, agent_eating, percentage_visited,  number_of_nodes, number_of_nodes_agents] = foraging_unknown_food(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount);
+            [positions_chickens, percentage_eating, dead, min_health, variance, moving_on, all_agent_health, alive_agent_health, deadness, agent_eating, percentage_visited,  number_of_nodes, number_of_nodes_agents] = foraging_unknown_food(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount);
             eating(end+1) = percentage_eating;
             variances(end+1)= variance;
             movings_on(end+1)= moving_on;
@@ -62,6 +64,7 @@ graphing = 0; % 1 = present graph
            agents_nodes = [agents_nodes, number_of_nodes_agents]; 
            all_agents_health = [all_agents_health; all_agent_health];
            agents_dead = [agents_dead; deadness];
+            alive_agents_health = [alive_agents_health, alive_agent_health];
            agents_eating = [agents_eating; transpose(agent_eating)]; 
            percentage_food_sources_visited = [percentage_food_sources_visited; percentage_visited];
            percetnage_of_nodes = 100*length(number_of_nodes)/(n*n);
@@ -76,6 +79,7 @@ graphing = 0; % 1 = present graph
         all_agents_eating = [all_agents_eating; mean(agents_eating)];
         agents_health = [agents_health; mean(all_agents_health)];
         sum_of_agents_dead = (sum(agents_dead)./amount_of_runs).*100;
+        all_alive_agents_health = [all_alive_agents_health; mean(alive_agents_health)];
         all_deaths = [all_deaths; sum_of_agents_dead];
         percentage_of_agents_deaths = [percentage_of_agents_deaths; sum_of_agents_dead];
         average_min_health(end +1) = mean(min_healths);
@@ -101,6 +105,7 @@ graphing = 0; % 1 = present graph
         variances = [];
         movings_on = [];
         all_agents_health = [];
+        alive_agents_health = [];
         dead = 0;
         agents_dead = [];
         agents_eating = [];
@@ -110,7 +115,7 @@ graphing = 0; % 1 = present graph
 
         for runs = 1:amount_of_runs
         
-            [positions_chickens, percentage_eating, dead, min_health, variance, moving_on, all_agent_health, deadness, agent_eating, percentage_visited,  number_of_nodes, number_of_nodes_agents] = foraging_known_food(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount);
+            [positions_chickens, percentage_eating, dead, min_health, variance, moving_on, all_agent_health, alive_agent_health, deadness, agent_eating, percentage_visited,  number_of_nodes, number_of_nodes_agents] = foraging_known_food(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount);
             eating(end+1) = percentage_eating;
             variances(end+1)= variance;
             movings_on(end+1)= moving_on;
@@ -124,6 +129,7 @@ graphing = 0; % 1 = present graph
 
            agents_nodes = [agents_nodes, number_of_nodes_agents]; 
            all_agents_health = [all_agents_health; all_agent_health];
+           alive_agents_health =[alive_agents_health, alive_agent_health];
            agents_dead = [agents_dead; deadness];
            agents_eating = [agents_eating; transpose(agent_eating)];  
            percentage_food_sources_visited = [percentage_food_sources_visited; percentage_visited];
@@ -137,6 +143,7 @@ graphing = 0; % 1 = present graph
         percentage_of_food_sources_visited(end+1) = mean(percentage_food_sources_visited);
         all_agents_eating = [all_agents_eating; mean(agents_eating)];
         agents_health = [agents_health; mean(all_agents_health)];
+        all_alive_agents_health = [all_alive_agents_health; mean(alive_agents_health)];
         sum_of_agents_dead = (sum(agents_dead)./amount_of_runs).*100;
         all_deaths = [all_deaths; sum_of_agents_dead];
         percentage_of_agents_deaths = [percentage_of_agents_deaths; sum_of_agents_dead];
@@ -162,6 +169,7 @@ for dominance_hierachy = 0:1
         variances = [];
         movings_on = [];
         all_agents_health = [];
+        alive_agents_health = [];
         dead = 0;
         agents_dead = [];
         agents_eating = [];
@@ -170,7 +178,7 @@ for dominance_hierachy = 0:1
 
         for runs = 1:amount_of_runs
               
-            [positions_chickens, percentage_eating, dead, min_health, variance, moving_on, all_agent_health, deadness, agent_eating, percentage_visited,  number_of_nodes, number_of_nodes_agents] = foraging_known_food_weights(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount);
+            [positions_chickens, percentage_eating, dead, min_health, variance, moving_on, all_agent_health, alive_agent_health, deadness, agent_eating, percentage_visited,  number_of_nodes, number_of_nodes_agents] = foraging_known_food_weights(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount);
             eating(end+1) = percentage_eating;
             variances(end+1)= variance;
             movings_on(end+1)= moving_on;
@@ -184,6 +192,7 @@ for dominance_hierachy = 0:1
 
            agents_nodes = [agents_nodes, number_of_nodes_agents]; 
            all_agents_health = [all_agents_health; all_agent_health];
+           alive_agents_health = [alive_agents_health, alive_agent_health];
            agents_dead = [agents_dead; deadness];
            agents_eating = [agents_eating; transpose(agent_eating)];    
            percentage_food_sources_visited = [percentage_food_sources_visited; percentage_visited];
@@ -197,6 +206,7 @@ for dominance_hierachy = 0:1
         percentage_of_nodes_visited(end+ 1) = mean(percentage_nodes_visited);
         all_agents_eating = [all_agents_eating; mean(agents_eating)];
         agents_health = [agents_health; mean(all_agents_health)];
+        all_alive_agents_health = [all_alive_agents_health; mean(alive_agents_health)];
         sum_of_agents_dead = (sum(agents_dead)./amount_of_runs).*100;
         all_deaths = [all_deaths; sum_of_agents_dead];
         percentage_of_agents_deaths = [percentage_of_agents_deaths; sum_of_agents_dead];
@@ -230,14 +240,14 @@ X = reordercats(X,{'Unknown food','Unknown food Hierachy','Known food','Known fo
 % % percentage of deaths for varying number of food sources
 % figure
 % figtemp = figure('units', 'centimeters');
-% plotting_deaths = [percentage_of_deaths(1,1) percentage_of_deaths(2,1); percentage_of_deaths(3, 1) percentage_of_deaths(4,1); percentage_of_deaths(5,1) percentage_of_deaths(6,1)];
-% plotting_eating = [percentage_of_eating(1,1) percentage_of_eating(2,1); percentage_of_eating(3,1) percentage_of_eating(4,1); percentage_of_eating(5,1) percentage_of_eating(6,1)];
-% X = categorical({'U','K','K+P'});
-% X = reordercats(X,{'U','K','K+P'});
-% bar(X,plotting_deaths)
+% plotting_deaths = [percentage_of_deaths(1,1) percentage_of_deaths(2,1); percentage_of_deaths(5,1) percentage_of_deaths(6,1)];
+% plotting_eating = [percentage_of_eating(1,1) percentage_of_eating(2,1); percentage_of_eating(5,1) percentage_of_eating(6,1)];
+% X = categorical({'U + E','K+P'});
+% X = reordercats(X,{'U + E','K+P'});
+% bar(X,plotting_eating)
 % legend('No Domiance', 'Dominance');
 % xlabel('Model') % x-axis label
-% ylabel('Percetnage of Deaths') % y-axis label
+% ylabel('Percetnage of Eating') % y-axis label
 % savepdf()
  
 
@@ -284,15 +294,36 @@ X = reordercats(X,{'Unknown food','Unknown food Hierachy','Known food','Known fo
 % % percentage of deaths for varying number of food sources
 % figure
 % figtemp = figure('units', 'centimeters');
-% plotting_health = [average_min_health(1,1) average_min_health(1,2); average_min_health(1,3) average_min_health(1,4); average_min_health(1,5) average_min_health(1,6)];
-% X = categorical({'U','K','K+P'});
-% X = reordercats(X,{'U','K','K+P'});
+% average_min_health = transpose(average_min_health);
+% plotting_health = [average_min_health(1,1) average_min_health(1,2); average_min_health(1,5) average_min_health(1,6)];
+% X = categorical({'U','K+P'});
+% X = reordercats(X,{'U','K+P'});
 % bar(X,plotting_health)
 % legend('No Domiance', 'Dominance');
 % ylim([(0) (max(average_min_health + 2))])
 % xlabel('Model') % x-axis label
 % ylabel('Average Minimum Health') % y-axis label
 % savepdf()
+
+
+%% BAR CHART OF AGENTS HEALTH WITH/WITHOUT DEAD
+set(0,'defaulttextinterpreter','latex')
+set(0, 'defaultlegendinterpreter', 'latex')
+set(groot,'defaultAxesTickLabelInterpreter','latex');  
+figtemp = figure('units', 'centimeters');
+% percentage of deaths for varying number of food sources
+figure
+figtemp = figure('units', 'centimeters');
+average_min_health = transpose(average_min_health);
+plotting_health = [agents_health(2,1) all_alive_agents_health(2,1);agents_health(6,1) all_alive_agents_health(6,1)];
+X = categorical({'U','K+P'});
+X = reordercats(X,{'U','K+P'});
+bar(X,plotting_health)
+legend('Inculding Dead', 'Not Including Dead');
+xlabel('Model') % x-axis label
+ylabel('Average Agent Health') % y-axis label
+savepdf()
+
 
 %% BAR CHART FOR AVERAGE MOVING ON 
 % set(0,'defaulttextinterpreter','latex')
@@ -302,9 +333,9 @@ X = reordercats(X,{'Unknown food','Unknown food Hierachy','Known food','Known fo
 % % percentage of deaths for varying number of food sources
 % figure
 % figtemp = figure('units', 'centimeters');
-% X = categorical({'U','K','K+P'});
-% X = reordercats(X,{'U','K','K+P'});
-% plotting_moving = [average_movings_on(2); average_movings_on(4); average_movings_on(6)];
+% X = categorical({'U','K+P'});
+% X = reordercats(X,{'U','K+P'});
+% plotting_moving = [average_movings_on(2); average_movings_on(6)];
 % bar(X,plotting_moving)
 % ylim([(0) (max(plotting_moving + 2))])
 % xlabel('Model') % x-axis label
@@ -357,18 +388,27 @@ X = reordercats(X,{'Unknown food','Unknown food Hierachy','Known food','Known fo
 % figtemp = figure('units', 'centimeters');
 % figure
 % figtemp = figure('units', 'centimeters');
-% mean_known_health = mean(agents_health(3,:));
+% mean_known_health = mean(agents_health(5,:));
 % agents = 1:chickens;
-% yline(mean_known_health);
-% plot(agents,agents_health(4,:),'-*', 'LineWidth',3)
-% yline(mean_known_health,'-','No Dominance')
+% yline(mean_known_health,'LineWidth',10);
+% plot(agents,agents_health(6,:),'-*', 'LineWidth',3)
+% yline(mean_known_health,'--r','No Dominance','LineWidth',3)
+% legend('Unknown', 'Known', 'location', 'best');
 % xlabel('Agent ') % x-axis label
 % ylabel('Health') % y-axis label
-% title('Known')
+% title('Unknown')
 % savepdf()
-
-
-
+% 
+% 
+% %% COREELATION
+% first_corre = corrcoef(agents,agents_health(6,:));
+% second_corre = corrcoef(agents,agents_health(2,:));
+% first_corre
+% second_corre
+% 
+% 
+% 
+% 
 
 
 

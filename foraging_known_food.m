@@ -1,5 +1,5 @@
  %% Chicken Foraging Simulation
- function [positions_chickens, percentage_eating, dead, min_health, variance, moving_on, all_agent_health, deadness, eating, percentage_visited,  number_of_nodes, number_of_nodes_agents ] = foraging_known_food(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount)
+ function [positions_chickens, percentage_eating, dead, min_health, variance, moving_on, all_agent_health, alive_agent_health, deadness, eating, percentage_visited,  number_of_nodes, number_of_nodes_agents ] = foraging_known_food(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount)
 
     %% Creates the graph
     A = delsq(numgrid('S',n+2)); % generates the grid
@@ -243,6 +243,22 @@ number_of_nodes_agents = arrayfun(@(x) numel(unique(positions_chickens(x,:))), (
         upper_sum = sum(upper_sum_gammas.*upper_sum_healths);
         health_of_agent = upper_sum/bottom_sum;
         all_agent_health(end+ 1) = health_of_agent;
+    end 
+       %% Calculating the health for all agents agent after a burn in of 10 timesteps for alive agents 
+    alive_agent_health = [];
+    for agent = 1:chickens 
+        if current_health(agent) > 1
+            a = ones(1, time - 11) * 0.9;
+            b = 1:(time - 11);
+            c = a.^b;
+            bottom_sum = 1 + sum(c);
+            upper_sum_healths = health(agent,11:time); % the one here indicates that its the firs agent = the most dominant!
+            upper_sum_gammas = ones(1,1);
+            upper_sum_gammas = horzcat(upper_sum_gammas,c);
+            upper_sum = sum(upper_sum_gammas.*upper_sum_healths);
+            health_of_agent = upper_sum/bottom_sum;
+            alive_agent_health(end+ 1) = health_of_agent;
+        end 
     end 
 
 end

@@ -1,5 +1,5 @@
  %% Chicken Foraging Simulation
- function [positions_chickens, percentage_eating, dead, min_health, variance, moving_on, all_agent_health, deadness, eating, percentage_visited, number_of_nodes, number_of_nodes_agents] = foraging_known_food_weights(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount)
+ function [positions_chickens, percentage_eating, dead, min_health, variance, moving_on, all_agent_health, alive_agent_health, deadness, eating, percentage_visited, number_of_nodes, number_of_nodes_agents] = foraging_known_food_weights(graphing, dominance_hierachy, chickens, n, time, food_source, starting_chicken_health, food_amount)
 
     %% Values
     agents_seen_each_other = [];
@@ -11,6 +11,7 @@
     eating = zeros(chickens,1); % how many timesteps are spent eating
     not_eating = ones(chickens,1); % adding one for the first timestep
     all = 0;
+    alls = 0;
     time_steps = 0;
     food_sources_visited = [];
     
@@ -347,20 +348,23 @@
     end 
 
     %% Finding the min health of all the chickens ( minus the dead ones)
-    for i = 1:chickens % collects the health for chickens that survived
-        if current_health(i) > 1
+    for p = 1:chickens % collects the health for chickens that survived
+        if current_health(p) > 1
         all = all + 1;
-        healths(all, :) = health(i, :);
+        healths(all, :) = health(p, :);
+    
         end 
     end 
+  
 
     %% Outputs
     percentage_eating = (mean(eating)/(mean(eating)+mean(not_eating)))*100;
-    min_health = min(healths, [], 'all'); % The min health of all chickens
-    mean_health = mean(healths,2); % mean health for all alive chikens 
+    min_health = min(healths, [], 'all'); % The min health of all chickens that are alive
+    mean_health = mean(healths,2); % the mean health for all alive chikens 
+   
     variance = var(mean_health); 
     
-    %% Calculating the health for all agents agent after a burn in of 10 timesteps
+    %% Calculating the health for all agents agent after a burn in of 10 timesteps for all agents 
     all_agent_health = [];
     for agent = 1:chickens 
         a = ones(1, time - 11) * 0.9;
@@ -374,6 +378,24 @@
         health_of_agent = upper_sum/bottom_sum;
         all_agent_health(end+ 1) = health_of_agent;
     end 
+
+   %% Calculating the health for all agents agent after a burn in of 10 timesteps for alive agents 
+    alive_agent_health = [];
+    for agent = 1:chickens 
+        if current_health(agent) > 1
+            a = ones(1, time - 11) * 0.9;
+            b = 1:(time - 11);
+            c = a.^b;
+            bottom_sum = 1 + sum(c);
+            upper_sum_healths = health(agent,11:time); % the one here indicates that its the firs agent = the most dominant!
+            upper_sum_gammas = ones(1,1);
+            upper_sum_gammas = horzcat(upper_sum_gammas,c);
+            upper_sum = sum(upper_sum_gammas.*upper_sum_healths);
+            health_of_agent = upper_sum/bottom_sum;
+            alive_agent_health(end+ 1) = health_of_agent;
+        end 
+    end 
+
 %% Finds how mnay different nodes the agents have been on 
 number_of_nodes_agents = arrayfun(@(x) numel(unique(positions_chickens(x,:))), (1:size(positions_chickens,1)).');
     %% Finds how many sources have been visited
