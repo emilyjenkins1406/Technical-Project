@@ -3,7 +3,7 @@
 
 ### Main:
 
-foraging.m : This is the main file from which the other simulations are run and extracted is compiled.
+'''foraging.m''' : This is the main file from which the other simulations are run and extracted is compiled.
 
 ### Unknown Model:
 
